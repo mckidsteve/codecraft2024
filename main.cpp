@@ -490,7 +490,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
 }
 
 //每帧的输入
-int PerframeInput() {
+void PerframeInput() {
     scanf("%d%d", &id, &money);
     log("第" + to_string(id) + "帧");
     int num;
@@ -507,7 +507,6 @@ int PerframeInput() {
         scanf("%d%d\n", &boats[i].status, &boats[i].berthid);
     char okk[100];
     scanf("%s", okk);
-    return id;
 }
 
 //每帧的更新

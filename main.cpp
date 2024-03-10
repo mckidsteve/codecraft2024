@@ -218,7 +218,10 @@ void PerframeUpdate() {
                 robot_id = i;
             }
         }
-        if (robot_id == -1)continue;
+        if (robot_id == -1) {
+            cargos.push(cargo);
+            continue;
+        }
         //如果机器人在运输其他货物，就先把货物重新放入队列
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);

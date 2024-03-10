@@ -21,7 +21,15 @@ int id;
  * */
 char game_map[n][n];
 
+class Cargo;
+
+class Robot;
+
 void log(string s);
+
+queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
+
+void RobotFindNewGoal(queue<Cargo> cars, Robot &r);
 
 //货物
 struct Cargo {
@@ -56,20 +64,30 @@ public:
     }
 
     //机器人获取物品
-    void getThings();
+    void getThings(int x, int y);
 
     //机器人放下物品
     void putThings();
+
+    //机器人移动
+    void move(int x, int y);
 
     //重置机器人
     void Reset();
 } robots[robot_num];
 
 //船
-struct Boat {
-    int num;//装载的数量
-    int pos;//停泊的泊位
-    int status;//船的状态
+class Boat {
+public:
+    int num{};//装载的数量
+    int berthid{};//停泊的泊位
+    int status{};//船的状态
+    int id{};//船的id
+    Boat() {}
+
+    void go();
+
+    void ship(int id);
 } boats[boat_num];
 
 //泊位
@@ -81,28 +99,42 @@ public:
     int transport_time{};//到达虚拟点的时间
     int loading_speed{};//装货速度
     queue<pair<int, int>> things;//泊位上的物品,储存的是相对坐标
+    int boatid{-1};//停靠或者准备停靠的船只编号
+
     Berth() = default;
 
     Berth(int x, int y, int transport_time, int loading_speed)
             : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
 
     //泊位向船装货
-    void stowage(Boat &boat);
+    void stowage();
 
 } berths[berth_num];
 
 
-void Robot::getThings() {
+void Robot::getThings(int x, int y) {
+    printf("get %d\n", id);
+    road = getRoadtoBerth(x, y, berths[berthid].x,
+                          berths[berthid].y, berthid);
 }
 
 void Robot::putThings() {
+    printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)return;
-    game_map[x][y] = '.';
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
+    this->Reset();
+    RobotFindNewGoal(cargos, *this);
+}
+
+void Robot::move(int x, int y) {
+    if (this->x - x == 1)printf("move %d %d\n", id, 2);
+    else if (this->x - x == -1)printf("move %d %d\n", id, 3);
+    else if (this->y - y == 1)printf("move %d %d\n", id, 1);
+    else if (this->y - y == -1)printf("move %d %d\n", id, 0);
 }
 
 void Robot::Reset() {
@@ -114,13 +146,26 @@ void Robot::Reset() {
     cargo = default_cargo;
 }
 
-void Berth::stowage(Boat &boat) {
+void Boat::go() {
+    printf("go %d\n", id);
+    if (berthid != -1) {
+        berths[berthid].boatid = -1;//对应的船归零
+    }
+    num = 0;
+}
+
+void Boat::ship(int goal) {
+    printf("ship %d %d\n", id, goal);
+    if (berthid != -1)berths[berthid].boatid = -1;
+    berths[goal].boatid = id;
+}
+
+void Berth::stowage() {
     for (int i = 0; i < loading_speed; i++) {
-        if (boat.num < boat_capacity) {
-            pair<int, int> a = things.front();
+        if (boats[boatid].num < boat_capacity && !things.empty()) {
+            //pair<int, int> a = things.front();
             things.pop();
-            game_map[a.first][a.second] = id + '0';
-            boat.num++;
+            boats[boatid].num++;
         } else return;
     }
 }
@@ -133,6 +178,12 @@ void Init() {
         for (int j = 0; j < n; j++) {
             if (game_map[i][j] == 'A')game_map[i][j] = '.';
         }
+    }
+    for (int i = 0; i < robot_num; i++) {
+        robots[i].id = i;
+    }
+    for (int i = 0; i < boat_num; i++) {
+        boats[i].id = i;
     }
     for (int i = 0; i < berth_num; i++) {
         int id;
@@ -369,11 +420,10 @@ int PerframeInput() {
         new_cargos.emplace_back(x, y, val, id);
     }
     for (int i = 0; i < robot_num; i++) {
-        robots[i].id = i;
         scanf("%d%d%d%d", &robots[i].goods, &robots[i].x, &robots[i].y, &robots[i].status);
     }
     for (int i = 0; i < 5; i++)
-        scanf("%d%d\n", &boats[i].status, &boats[i].pos);
+        scanf("%d%d\n", &boats[i].status, &boats[i].berthid);
     char okk[100];
     scanf("%s", okk);
     return id;
@@ -464,26 +514,61 @@ void PerframeOutput() {
                 robots[i].Reset();
             } else {
                 //机器人移动
-                if (robots[i].x - next.first == 1)printf("move %d %d\n", i, 2);
-                else if (robots[i].x - next.first == -1)printf("move %d %d\n", i, 3);
-                else if (robots[i].y - next.second == 1)printf("move %d %d\n", i, 1);
-                else if (robots[i].y - next.second == -1)printf("move %d %d\n", i, 0);
+                robots[i].move(next.first, next.second);
             }
             if (robots[i].road.empty()) {
                 if (robots[i].goods == 0) {
                     //机器人没有货物,就去拿货物
-                    printf("get %d\n", i);
-                    robots[i].road = getRoadtoBerth(next.first, next.second, berths[robots[i].berthid].x,
-                                                    berths[robots[i].berthid].y, robots[i].berthid);
+                    robots[i].getThings(next.first, next.second);
                 } else {
                     //机器人有货物,就去放货物
-                    printf("pull %d\n", i);
-                    robots[i].Reset();
-                    //拿一个新的物品
-                    RobotFindNewGoal(cargos, robots[i]);
+                    robots[i].putThings();
                 }
             }
         }
+    }
+    for (int i = 0; i < boat_num; i++) {
+        if (boats[i].status == 0)continue;
+        if (boats[i].num == boat_capacity ||//当装满的时候直接出发开始运输
+            boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + id > 14950 &&
+            boats[i].num != 0) {//当时间快到的时候也直接开始运输
+            boats[i].go();
+            continue;
+        } else if (boats[i].berthid == -1) {
+            int max = 0, goal = -1;
+            for (int j = 0; j < berth_num; j++) {
+                int z = berths[j].things.size();
+                if (z > max) {
+                    max = z;
+                    goal = j;
+                }
+            }
+            if (goal == -1) {
+                for (int j = 0; j < berth_num; j++) {
+                    if (berths[j].boatid == -1) {
+                        goal = j;
+                        break;
+                    }
+                }
+            }
+            boats[i].ship(goal);
+            continue;
+        } else if (!berths[boats[i].berthid].things.empty()) {
+            continue;
+        } else {
+            int max = 0, goal = -1;
+            for (int j = 0; j < berth_num; j++) {
+                int z = berths[j].things.size();
+                if (z > max) {
+                    max = z;
+                    goal = j;
+                }
+            }
+            boats[i].ship(goal);
+        }
+    }
+    for (int i = 0; i < berth_num; i++) {
+        berths[i].stowage();
     }
     puts("OK");
     fflush(stdout);

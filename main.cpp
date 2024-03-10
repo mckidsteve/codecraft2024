@@ -69,6 +69,9 @@ public:
     //机器人放下物品
     void putThings(int x, int y);
 
+    //设置机器人要拿取什么物品
+    void setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r);
+
     //机器人移动
     void move(int x, int y);
 
@@ -145,8 +148,19 @@ void Robot::Reset() {
     cargo = default_cargo;
 }
 
+void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
+    log("机器人id:" + to_string(id));
+    log("新物品的x坐标:" + to_string(c.x));
+    log("新物品的y坐标:" + to_string(c.y));
+    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+    cargo = c;
+    cargotoberth = dis;
+    berthid = brenth_id;
+    road = r;
+}
+
 void Boat::go() {
-    log("第" + to_string(id) + "号船开向虚拟点");
+    //log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
     if (berthid != -1) {
         berths[berthid].boatid = -1;//对应的船归零
@@ -158,7 +172,7 @@ void Boat::go() {
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
-    log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
+    //log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
@@ -172,7 +186,7 @@ void Berth::stowage() {
     if (boatid == -1)return;
     if (boats[boatid].status == 0)return;
     if (things.empty())return;
-    log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
+    //log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             //pair<int, int> a = things.front();
@@ -414,10 +428,16 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     if (max_value <= 0)return;
     queue<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
     if (road.empty())return;
-    r.cargo = goal;
-    r.cargotoberth = goal_time;
-    r.berthid = goal_id;
-    r.road = road;
+    //删除被拿走的物品
+    queue<Cargo> c;
+    while (!cargos.empty()) {
+        Cargo ca = cargos.front();
+        cargos.pop();
+        if (ca.val == goal.val && ca.x == goal.x && ca.y == goal.y && ca.time == goal.time) continue;
+        c.push(ca);
+    }
+    cargos = c;
+    r.setGoal(goal, goal_time, goal_id, road);
 }
 
 //每帧的输入
@@ -443,7 +463,6 @@ int PerframeInput() {
 
 //每帧的更新
 void PerframeUpdate() {
-    //log("第" + to_string(id) + "帧更新");
     queue<Cargo> c;
     //当大于1000帧的时候物品消失
     for (int i = 0; i < cargos.size(); i++) {
@@ -460,14 +479,11 @@ void PerframeUpdate() {
             break;
         }
     }
-    //log(have_robot ? "有机器人空闲" : "所有机器人都在运货");
     while (have_robot && !new_cargos.empty()) {
         Cargo cargo = new_cargos.front();
         new_cargos.pop_front();
-        //log("货物:\nx:" + to_string(cargo.x) + "\ny:" + to_string(cargo.y) + "\n价值:" + to_string(cargo.val));
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        //log("距离最近的泊位:" + to_string(berth_id));
         int berth_time =
                 abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
         double max_value = 0.0;
@@ -505,10 +521,7 @@ void PerframeUpdate() {
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);
         }
-        robots[robot_id].cargo = cargo;
-        robots[robot_id].cargotoberth = berth_time;
-        robots[robot_id].berthid = berth_id;
-        robots[robot_id].road = road;
+        robots[robot_id].setGoal(cargo, berth_time, berth_id, road);
         break;
     }
     //没有任务目标的机器人获得新的任务目标
@@ -522,11 +535,11 @@ void PerframeUpdate() {
 //每帧的输出
 void PerframeOutput() {
     //log("第" + to_string(id) + "帧输出");
-    for (int i = 0; i < berth_num; i++) {
-        if (berths[i].things.empty())continue;
-        log("第" + to_string(i) + "号泊位");
-        log("物品数量:" + to_string(berths[i].things.size()));
-    }
+//    for (int i = 0; i < berth_num; i++) {
+//        if (berths[i].things.empty())continue;
+//        log("第" + to_string(i) + "号泊位");
+//        log("物品数量:" + to_string(berths[i].things.size()));
+//    }
     for (int i = 0; i < robot_num; i++) {
         //如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
@@ -604,11 +617,34 @@ void log(string s) {
 #endif
 }
 
+#ifdef _WIN32
+
+//创建一张地图
+void CreateMap() {
+    char map[n][n];
+    memset(map, '.', sizeof(map));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == n - 2) {
+                outfile << '#';
+            } else if (i < 4 && j % 5 != 0 && j <= 50) {
+                outfile << 'B';
+            } else {
+                outfile << map[i][j];
+            }
+        }
+        outfile << endl;
+    }
+}
+
+#endif
+
 //主函数
 int main() {
 #ifdef _WIN32
     // 以写模式打开文件
     outfile.open("log.txt", ios::out | ios::trunc);
+    //CreateMap();
 #endif
     Init();
     for (int zhen = 1; zhen <= 15000; zhen++) {

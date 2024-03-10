@@ -210,7 +210,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
     int nowx = x1, nowy = y1;
     //获取路径
     while (nowx != x || nowy != y) {
-        road.push(make_pair(nowx, nowy));
+        road.emplace(nowx, nowy);
         for (int i = 0; i < 4; i++) {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
@@ -225,12 +225,15 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
         }
     }
     //翻转路径
-    queue<pair<int, int>> road1;
+    stack<pair<int, int>> road1;
     while (!road.empty()) {
         road1.push(road.front());
         road.pop();
     }
-    road = road1;
+    while (!road1.empty()) {
+        road.push(road1.top());
+        road1.pop();
+    }
     return road;
 }
 
@@ -280,7 +283,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     int nowx = fx, nowy = fy;
     //获取路径
     while (nowx != x || nowy != y) {
-        road.push(make_pair(nowx, nowy));
+        road.emplace(nowx, nowy);
         for (int i = 0; i < 4; i++) {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
@@ -295,12 +298,15 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
         }
     }
     //翻转路径
-    queue<pair<int, int>> road1;
+    stack<pair<int, int>> road1;
     while (!road.empty()) {
         road1.push(road.front());
         road.pop();
     }
-    road = road1;
+    while (!road1.empty()) {
+        road.push(road1.top());
+        road1.pop();
+    }
     return road;
 }
 
@@ -352,11 +358,14 @@ void PerframeUpdate() {
             break;
         }
     }
+    log(have_robot ? "有机器人空闲" : "所有机器人都在运货");
     while (have_robot && !new_cargos.empty()) {
         Cargo cargo = new_cargos.front();
         new_cargos.pop_front();
+        log("货物:\nx:" + to_string(cargo.x) + "\ny:" + to_string(cargo.y) + "\n价值:" + to_string(cargo.val));
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
+        log("距离最近的泊位:" + to_string(berth_id));
         int berth_time =
                 abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
         double max_value = 0.0;
@@ -375,12 +384,16 @@ void PerframeUpdate() {
                 robot_id = i;
             }
         }
+        log("最优的机器人:" + to_string(robot_id));
         //如果没有找到机器人就把货物重新放入队列
         if (robot_id == -1) {
             cargos.push(cargo);
             continue;
         }
         queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
+        log("路径长度:" + to_string(road.size()));
+        log("机器人坐标:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
+        log("路径第一个坐标:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
         //如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
             cargos.push(cargo);

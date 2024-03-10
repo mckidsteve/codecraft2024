@@ -124,8 +124,8 @@ void Robot::getThings(int x, int y) {
 void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
-    log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     if (num < 0 || num >= berth_num)return;
+    log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
@@ -144,7 +144,7 @@ void Robot::Reset(bool complete) {
     while (!road.empty())road.pop();
     cargotoberth = 0;
     berthid = -1;
-    if (!complete)cargos.push(cargo);
+    if (!complete && goods == 0)cargos.push(cargo);
     cargo = default_cargo;
 }
 
@@ -227,6 +227,20 @@ void Init() {
     scanf("%s", okk);
     printf("OK\n");
     fflush(stdout);
+}
+
+//机器人到泊位的距离
+int RobottoBerth(Robot &r) {
+    int min_time = 0x3f3f3f3f;
+    int min_id = -1;
+    for (int i = 0; i < berth_num; i++) {
+        int time = abs(r.x - berths[i].x) + abs(r.y - berths[i].y) + berths[i].transport_time;
+        if (time < min_time) {
+            min_time = time;
+            min_id = i;
+        }
+    }
+    return min_id;
 }
 
 //货物到泊位的距离
@@ -524,9 +538,15 @@ void PerframeUpdate() {
         robots[robot_id].setGoal(cargo, berth_time, berth_id, road);
         break;
     }
-    //没有任务目标的机器人获得新的任务目标
+    //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
-        if (robots[i].cargo.val == 0) {
+        if (robots[i].goods == 1 &&
+            robots[i].road.size() == 0) {
+            int berth_id = RobottoBerth(robots[i]);
+            robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
+                                            berths[berth_id].y, berth_id);
+        }
+        if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
             RobotFindNewGoal(cargos, robots[i]);
         }
     }
@@ -561,6 +581,8 @@ void PerframeOutput() {
                     robots[i].putThings(next.first, next.second);
                 }
             }
+        } else if (robots[i].goods == 1) {//机器人正好在港口上的时候
+            robots[i].putThings(robots[i].x, robots[i].y);
         }
     }
     for (int i = 0; i < boat_num; i++) {

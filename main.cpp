@@ -511,8 +511,8 @@ void PerframeUpdate() {
             double robot_value =
                     robots[i].cargo.val * 1.0 / max(1, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)continue;
-            if (value > max_value) {
-                max_value = value;
+            if (value - robot_value > max_value) {
+                max_value = value - robot_value;
                 robot_id = i;
             }
         }

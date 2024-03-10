@@ -162,7 +162,7 @@ void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
 }
 
 void Boat::go() {
-    log("第" + to_string(id) + "号船开向虚拟点");
+    //log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
     if (berthid != -1) {
         berths[berthid].boatid = -1;//对应的船归零
@@ -174,7 +174,7 @@ void Boat::go() {
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
-    log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
+    //log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
@@ -584,6 +584,9 @@ void PerframeUpdate() {
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
             RobotFindNewGoal(cargos, robots[i]);
+        }
+        if (robots[i].cargo.val != 0 && (robots[i].road.size() + id - robots[i].cargo.time > 1000)) {
+            robots[i].Reset(false);
         }
     }
 }

@@ -125,7 +125,7 @@ void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)return;
-    log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
+    //log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
@@ -149,10 +149,10 @@ void Robot::Reset(bool complete) {
 }
 
 void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
-    log("机器人id:" + to_string(id));
-    log("新物品的x坐标:" + to_string(c.x));
-    log("新物品的y坐标:" + to_string(c.y));
-    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+//    log("机器人id:" + to_string(id));
+//    log("新物品的x坐标:" + to_string(c.x));
+//    log("新物品的y坐标:" + to_string(c.y));
+//    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
@@ -160,7 +160,7 @@ void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
 }
 
 void Boat::go() {
-    //log("第" + to_string(id) + "号船开向虚拟点");
+    log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
     if (berthid != -1) {
         berths[berthid].boatid = -1;//对应的船归零
@@ -172,7 +172,7 @@ void Boat::go() {
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
-    //log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
+    log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
@@ -595,6 +595,7 @@ void PerframeOutput() {
         } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
+                if (berths[j].boatid != -1)continue;
                 int z = berths[j].things.size();
                 if (z > max) {
                     max = z;
@@ -616,11 +617,13 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
+                if (berths[j].boatid != -1)continue;
                 if (id + 500 + berths[j].transport_time > 14950)continue;
                 int z = berths[j].things.size();
                 if (z > max) {
                     max = z;
                     goal = j;
+                    
                 }
             }
             boats[i].ship(goal);

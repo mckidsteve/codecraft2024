@@ -67,7 +67,7 @@ public:
     void getThings(int x, int y);
 
     //机器人放下物品
-    void putThings();
+    void putThings(int x, int y);
 
     //机器人移动
     void move(int x, int y);
@@ -118,16 +118,16 @@ void Robot::getThings(int x, int y) {
                           berths[berthid].y, berthid);
 }
 
-void Robot::putThings() {
+void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
+    log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     if (num < 0 || num >= berth_num)return;
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
     this->Reset();
-    RobotFindNewGoal(cargos, *this);
 }
 
 void Robot::move(int x, int y) {
@@ -138,8 +138,7 @@ void Robot::move(int x, int y) {
 }
 
 void Robot::Reset() {
-    queue<pair<int, int>> road;
-    this->road = road;
+    while (!road.empty())road.pop();
     cargotoberth = 0;
     berthid = -1;
     cargos.push(cargo);
@@ -147,23 +146,33 @@ void Robot::Reset() {
 }
 
 void Boat::go() {
+    log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
     if (berthid != -1) {
         berths[berthid].boatid = -1;//对应的船归零
     }
     num = 0;
+    berthid = -1;
+    status = 0;
 }
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
+    log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
     }
     berths[goal].boatid = id;
+    berthid = goal;
+    status = 0;
 }
 
 void Berth::stowage() {
+    if (boatid == -1)return;
+    if (boats[boatid].status == 0)return;
+    if (things.empty())return;
+    log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             //pair<int, int> a = things.front();
@@ -389,7 +398,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         cars.pop();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        log("距离最近的泊位:" + to_string(berth_id));
+        //log("距离最近的泊位:" + to_string(berth_id));
         int berth_time =
                 abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) +
                 berths[berth_id].transport_time;
@@ -414,7 +423,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
 //每帧的输入
 int PerframeInput() {
     scanf("%d%d", &id, &money);
-    log("第" + to_string(id) + "帧输入");
+    log("第" + to_string(id) + "帧");
     int num;
     scanf("%d", &num);
     for (int i = 1; i <= num; i++) {
@@ -434,7 +443,7 @@ int PerframeInput() {
 
 //每帧的更新
 void PerframeUpdate() {
-    log("第" + to_string(id) + "帧更新");
+    //log("第" + to_string(id) + "帧更新");
     queue<Cargo> c;
     //当大于1000帧的时候物品消失
     for (int i = 0; i < cargos.size(); i++) {
@@ -451,14 +460,14 @@ void PerframeUpdate() {
             break;
         }
     }
-    log(have_robot ? "有机器人空闲" : "所有机器人都在运货");
+    //log(have_robot ? "有机器人空闲" : "所有机器人都在运货");
     while (have_robot && !new_cargos.empty()) {
         Cargo cargo = new_cargos.front();
         new_cargos.pop_front();
-        log("货物:\nx:" + to_string(cargo.x) + "\ny:" + to_string(cargo.y) + "\n价值:" + to_string(cargo.val));
+        //log("货物:\nx:" + to_string(cargo.x) + "\ny:" + to_string(cargo.y) + "\n价值:" + to_string(cargo.val));
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        log("距离最近的泊位:" + to_string(berth_id));
+        //log("距离最近的泊位:" + to_string(berth_id));
         int berth_time =
                 abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
         double max_value = 0.0;
@@ -477,16 +486,16 @@ void PerframeUpdate() {
                 robot_id = i;
             }
         }
-        log("最优的机器人:" + to_string(robot_id));
+        //log("最优的机器人:" + to_string(robot_id));
         //如果没有找到机器人就把货物重新放入队列
         if (robot_id == -1) {
             cargos.push(cargo);
             continue;
         }
         queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
-        log("路径长度:" + to_string(road.size()));
-        log("机器人坐标:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
-        log("路径第一个坐标:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
+        //log("路径长度:" + to_string(road.size()));
+        //log("机器人坐标:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
+        //log("路径第一个坐标:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
         //如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
             cargos.push(cargo);
@@ -502,11 +511,22 @@ void PerframeUpdate() {
         robots[robot_id].road = road;
         break;
     }
+    //没有任务目标的机器人获得新的任务目标
+    for (int i = 0; i < robot_num; i++) {
+        if (robots[i].cargo.val == 0) {
+            RobotFindNewGoal(cargos, robots[i]);
+        }
+    }
 }
 
 //每帧的输出
 void PerframeOutput() {
-    log("第" + to_string(id) + "帧输出");
+    //log("第" + to_string(id) + "帧输出");
+    for (int i = 0; i < berth_num; i++) {
+        if (berths[i].things.empty())continue;
+        log("第" + to_string(i) + "号泊位");
+        log("物品数量:" + to_string(berths[i].things.size()));
+    }
     for (int i = 0; i < robot_num; i++) {
         //如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
@@ -525,7 +545,7 @@ void PerframeOutput() {
                     robots[i].getThings(next.first, next.second);
                 } else {
                     //机器人有货物,就去放货物
-                    robots[i].putThings();
+                    robots[i].putThings(next.first, next.second);
                 }
             }
         }
@@ -586,11 +606,11 @@ void log(string s) {
 
 //主函数
 int main() {
-    Init();
 #ifdef _WIN32
     // 以写模式打开文件
     outfile.open("log.txt", ios::out | ios::trunc);
 #endif
+    Init();
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();

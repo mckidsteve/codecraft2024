@@ -8,6 +8,8 @@ const int boat_num = 5;
 const int berth_num = 10;
 int money;//钱数 （分数）
 int boat_capacity;//船装货上限
+//到对应泊位的距离
+int berth_dis[n][n][berth_num];
 #ifdef _WIN32
 ofstream outfile;//日志文件
 #endif
@@ -225,6 +227,38 @@ void Init() {
     scanf("%d", &boat_capacity);
     char okk[100];
     scanf("%s", okk);
+    //初始化所有泊位到所有位置的距离
+    memset(berth_dis, -1, sizeof(berth_dis));
+    int dir[4][2] = {{0,  1},
+                     {0,  -1},
+                     {1,  0},
+                     {-1, 0}};
+    for (int i = 0; i < berth_num; i++) {
+        queue<pair<int, pair<int, int>>> q;
+        for (int j = 0; j < 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                q.emplace(0, make_pair(berths[i].x + j, berths[i].y + k));
+                berth_dis[berths[i].x + j][berths[i].y + k][i] = 0;
+            }
+        }
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || berth_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //标记已经访问
+                berth_dis[nextx][nexty][i] = nowg + 1;
+                //加入优先队列
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
     printf("OK\n");
     fflush(stdout);
 }
@@ -234,7 +268,8 @@ int RobottoBerth(Robot &r) {
     int min_time = 0x3f3f3f3f;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
-        int time = abs(r.x - berths[i].x) + abs(r.y - berths[i].y) + berths[i].transport_time;
+        if (berth_dis[r.x][r.y][i] == -1)continue;
+        int time = berth_dis[r.x][r.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -248,7 +283,8 @@ int CargotoBerth(Cargo &c) {
     int min_time = 0x3f3f3f3f;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
-        int time = abs(c.x - berths[i].x) + abs(c.y - berths[i].y) + berths[i].transport_time;
+        if (berth_dis[c.x][c.y][i] == -1)continue;
+        int time = berth_dis[c.x][c.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -365,7 +401,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
             //估价函数
             int nextg = nowg + 1;
             //曼哈顿距离
-            int h = abs(nextx - x1) + abs(nexty - y1);
+            int h = berth_dis[nextx][nexty][berthid];
             //加入优先队列
             q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
         }
@@ -428,8 +464,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         if (berth_id == -1)continue;
         //log("距离最近的泊位:" + to_string(berth_id));
         int berth_time =
-                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) +
-                berths[berth_id].transport_time;
+                berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
         int robot_time = CargotoRobot(cargo, robots[i]);
         double value = cargo.val * 1.0 / (berth_time + robot_time);
         if (value > max_value) {
@@ -499,13 +534,15 @@ void PerframeUpdate() {
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
         int berth_time =
-                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
+                berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
         double max_value = 0.0;
         int robot_id = -1;
         //找到最优的机器人
         for (int i = 0; i < robot_num; i++) {
             //如果机器人携带货物就跳过
             if (robots[i].goods == 1)continue;
+            //如果机器人到不了对应的泊位
+            if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
@@ -554,7 +591,7 @@ void PerframeUpdate() {
 
 //每帧的输出
 void PerframeOutput() {
-    //log("第" + to_string(id) + "帧输出");
+//    log("第" + to_string(id) + "帧输出");
 //    for (int i = 0; i < berth_num; i++) {
 //        if (berths[i].things.empty())continue;
 //        log("第" + to_string(i) + "号泊位");
@@ -623,7 +660,6 @@ void PerframeOutput() {
                 if (z > max) {
                     max = z;
                     goal = j;
-                    
                 }
             }
             boats[i].ship(goal);

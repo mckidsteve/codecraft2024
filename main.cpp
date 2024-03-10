@@ -325,6 +325,38 @@ int CargotoRobot(Cargo &c, Robot &r) {
     return abs(c.x - r.x) + abs(c.y - r.y);
 }
 
+//获取一个新的物品
+void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
+    double max_value = 0;
+    int goal_id, goal_time;
+    Cargo goal = default_cargo;
+    for (int i = 0; i < cargos.size(); i++) {
+        Cargo cargo = cars.front();
+        cars.pop();
+        int berth_id = CargotoBerth(cargo);
+        if (berth_id == -1)continue;
+        log("距离最近的泊位:" + to_string(berth_id));
+        int berth_time =
+                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) +
+                berths[berth_id].transport_time;
+        int robot_time = CargotoRobot(cargo, robots[i]);
+        double value = cargo.val * 1.0 / (berth_time + robot_time);
+        if (value > max_value) {
+            max_value = value;
+            goal = cargo;
+            goal_id = berth_id;
+            goal_time = berth_time;
+        }
+    }
+    if (max_value <= 0)return;
+    queue<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
+    if (road.empty())return;
+    r.cargo = goal;
+    r.cargotoberth = goal_time;
+    r.berthid = goal_id;
+    r.road = road;
+}
+
 //每帧的输入
 int PerframeInput() {
     scanf("%d%d", &id, &money);
@@ -350,6 +382,14 @@ int PerframeInput() {
 //每帧的更新
 void PerframeUpdate() {
     log("第" + to_string(id) + "帧更新");
+    queue<Cargo> c;
+    //当大于1000帧的时候物品消失
+    for (int i = 0; i < cargos.size(); i++) {
+        Cargo cargo = cargos.front();
+        cargos.pop();
+        if (cargo.time - id > 1000)continue;
+        c.push(cargo);
+    }
     //每帧处理一个新货物
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {
@@ -439,6 +479,8 @@ void PerframeOutput() {
                     //机器人有货物,就去放货物
                     printf("pull %d\n", i);
                     robots[i].Reset();
+                    //拿一个新的物品
+                    RobotFindNewGoal(cargos, robots[i]);
                 }
             }
         }

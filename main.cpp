@@ -19,17 +19,17 @@ int id;
 char game_map[n][n];
 
 //货物
-struct cargo {
+struct Cargo {
     int x, y;//货物的坐标
     int val;//货物的价值
     int time;//货物的产生时间
-    cargo(int x, int y, int val, int time) : x(x), y(y), val(val), time(time) {}
-};
+    Cargo(int x, int y, int val, int time) : x(x), y(y), val(val), time(time) {}
+} default_cargo(0, 0, 0, 0);
 
 //所有货物队列
-queue<cargo> cargos;
+queue<Cargo> cargos;
 //新产生的货物队列
-queue<cargo> new_cargos;
+deque<Cargo> new_cargos;
 
 //机器人
 class Robot {
@@ -38,6 +38,8 @@ public:
     int x{}, y{};//机器人的x，y坐标
     int status{};//机器人是否处于运行状态
     int id{};//机器人的编号
+    int cargotoberth{};//机器人携带的货物到泊位的距离
+    Cargo cargo{default_cargo};//机器人的货物
     queue<pair<int, int>> road;//机器人的路径
 
     Robot() = default;
@@ -132,6 +134,36 @@ void Init() {
     fflush(stdout);
 }
 
+//货物到泊位的距离
+int CargotoBerth(Cargo &c) {
+    int min_time = 0x3f3f3f3f;
+    int min_id = -1;
+    for (int i = 0; i < berth_num; i++) {
+        int time = abs(c.x - berths[i].x) + abs(c.y - berths[i].y) + berths[i].transport_time;
+        if (time < min_time) {
+            min_time = time;
+            min_id = i;
+        }
+    }
+    return min_id;
+}
+
+//A*算法
+queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
+    queue<pair<int, int>> road;
+    return road;
+}
+
+//获取路径
+queue<pair<int, int>> getroad(int x, int y, int x1, int y1) {
+    return Astar(x, y, x1, y1);
+}
+
+//货物到机器人的距离
+int CargotoRobot(Cargo &c, Robot &r) {
+    return abs(c.x - r.x) + abs(c.y - r.y);
+}
+
 //每帧的输入
 int PerframeInput() {
     scanf("%d%d", &id, &money);
@@ -140,7 +172,7 @@ int PerframeInput() {
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        new_cargos.emplace(x, y, val, id);
+        new_cargos.emplace_back(x, y, val, id);
     }
     for (int i = 0; i < robot_num; i++) {
         robots[i].id = i;
@@ -153,10 +185,55 @@ int PerframeInput() {
     return id;
 }
 
+//每帧的更新
 void PerframeUpdate() {
+    //每帧处理一个新货物
+    bool have_robot = false;
+    for (int i = 0; i < robot_num; i++) {
+        if (robots[i].goods == 0) {
+            have_robot = true;
+            break;
+        }
+    }
+    while (have_robot && !new_cargos.empty()) {
+        Cargo cargo = new_cargos.front();
+        new_cargos.pop_front();
+        int berth_id = CargotoBerth(cargo);
+        if (berth_id == -1)continue;
+        int berth_time =
+                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
+        double max_value = 0.0;
+        int robot_id = -1;
+        //找到最优的机器人
+        for (int i = 0; i < robot_num; i++) {
+            //如果机器人携带货物就跳过
+            if (robots[i].goods == 1)continue;
+            int robot_time = CargotoRobot(cargo, robots[i]);
+            double value = cargo.val * 1.0 / (berth_time + robot_time);
+            double robot_value =
+                    robots[i].cargo.val * 1.0 / max(1, (int) robots[i].road.size() + robots[i].cargotoberth);
+            if (robot_value > value)continue;
+            if (value > max_value) {
+                max_value = value;
+                robot_id = i;
+            }
+        }
+        if (robot_id == -1)continue;
+        //如果机器人在运输其他货物，就先把货物重新放入队列
+        if (robots[robot_id].cargo.val != 0) {
+            new_cargos.push_front(robots[robot_id].cargo);
+        }
+        robots[robot_id].cargo = cargo;
+        robots[robot_id].cargotoberth = berth_time;
+        robots[robot_id].road = getroad(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
+        break;
+    }
+}
+
+//每帧的输出
+void PerframeOutput() {
     for (int i = 0; i < robot_num; i++)
-        printf("move %d %d\n", i, rand() % 4);
-    puts("OK");
+        puts("OK");
     fflush(stdout);
 }
 
@@ -166,6 +243,7 @@ int main() {
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();
+        PerframeOutput();
     }
     return 0;
 }

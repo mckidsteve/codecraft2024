@@ -155,8 +155,11 @@ void Boat::go() {
 }
 
 void Boat::ship(int goal) {
+    if (goal == -1)return;
     printf("ship %d %d\n", id, goal);
-    if (berthid != -1)berths[berthid].boatid = -1;
+    if (berthid != -1) {
+        berths[berthid].boatid = -1;
+    }
     berths[goal].boatid = id;
 }
 

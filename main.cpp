@@ -9,7 +9,27 @@ const int berth_num = 10;
 int money;//钱数 （分数）
 int boat_capacity;//船装货上限
 int id;
+/**
+ * 地图
+ * .空地
+ * *海洋
+ * #障碍
+ * 0-9泊位所在的位置
+ * */
 char game_map[n][n];
+
+//货物
+struct cargo {
+    int x, y;//货物的坐标
+    int val;//货物的价值
+    int time;//货物的产生时间
+    cargo(int x, int y, int val, int time) : x(x), y(y), val(val), time(time) {}
+};
+
+//所有货物队列
+queue<cargo> cargos;
+//新产生的货物队列
+queue<cargo> new_cargos;
 
 //机器人
 class Robot {
@@ -18,7 +38,7 @@ public:
     int x{}, y{};//机器人的x，y坐标
     int status{};//机器人是否处于运行状态
     int id{};//机器人的编号
-    int mbx{}, mby{};
+    queue<pair<int, int>> road;//机器人的路径
 
     Robot() = default;
 
@@ -120,6 +140,7 @@ int PerframeInput() {
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
+        new_cargos.emplace(x, y, val, id);
     }
     for (int i = 0; i < robot_num; i++) {
         robots[i].id = i;

@@ -8,6 +8,9 @@ const int boat_num = 5;
 const int berth_num = 10;
 int money;//钱数 （分数）
 int boat_capacity;//船装货上限
+#ifdef _WIN32
+ofstream outfile;//日志文件
+#endif
 int id;
 /**
  * 地图
@@ -17,6 +20,8 @@ int id;
  * 0-9泊位所在的位置
  * */
 char game_map[n][n];
+
+void log(string s);
 
 //货物
 struct Cargo {
@@ -317,6 +322,7 @@ int CargotoRobot(Cargo &c, Robot &r) {
 //每帧的输入
 int PerframeInput() {
     scanf("%d%d", &id, &money);
+    log("第" + to_string(id) + "帧输入");
     int num;
     scanf("%d", &num);
     for (int i = 1; i <= num; i++) {
@@ -337,6 +343,7 @@ int PerframeInput() {
 
 //每帧的更新
 void PerframeUpdate() {
+    log("第" + to_string(id) + "帧更新");
     //每帧处理一个新货物
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {
@@ -393,6 +400,7 @@ void PerframeUpdate() {
 
 //每帧的输出
 void PerframeOutput() {
+    log("第" + to_string(id) + "帧输出");
     for (int i = 0; i < robot_num; i++) {
         //如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
@@ -426,13 +434,27 @@ void PerframeOutput() {
     fflush(stdout);
 }
 
+//日志信息
+void log(string s) {
+#ifdef _WIN32
+    outfile << s << endl;
+#endif
+}
+
 //主函数
 int main() {
     Init();
+#ifdef _WIN32
+    // 以写模式打开文件
+    outfile.open("log.txt", ios::out | ios::trunc);
+#endif
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();
         PerframeOutput();
     }
+#ifdef _WIN32
+    outfile.close();
+#endif
     return 0;
 }

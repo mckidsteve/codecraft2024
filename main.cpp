@@ -76,7 +76,7 @@ public:
     void move(int x, int y);
 
     //重置机器人
-    void Reset();
+    void Reset(bool complete);
 } robots[robot_num];
 
 //船
@@ -130,7 +130,7 @@ void Robot::putThings(int x, int y) {
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
-    this->Reset();
+    this->Reset(true);
 }
 
 void Robot::move(int x, int y) {
@@ -140,11 +140,11 @@ void Robot::move(int x, int y) {
     else if (this->y - y == -1)printf("move %d %d\n", id, 0);
 }
 
-void Robot::Reset() {
+void Robot::Reset(bool complete) {
     while (!road.empty())road.pop();
     cargotoberth = 0;
     berthid = -1;
-    cargos.push(cargo);
+    if (!complete)cargos.push(cargo);
     cargo = default_cargo;
 }
 
@@ -547,7 +547,7 @@ void PerframeOutput() {
             robots[i].road.pop();
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
-                robots[i].Reset();
+                robots[i].Reset(false);
             } else {
                 //机器人移动
                 robots[i].move(next.first, next.second);
@@ -594,6 +594,7 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
+                if (id + 500 + berths[j].transport_time > 14950)continue;
                 int z = berths[j].things.size();
                 if (z > max) {
                     max = z;

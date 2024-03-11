@@ -1,25 +1,31 @@
 #include <bits/stdc++.h>
 
+#define MAXNUM 0x3f3f3f3f
 using namespace std;
 
 const int n = 200;
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
-int money;//Ç®Êı £¨·ÖÊı£©
-int boat_capacity;//´¬×°»õÉÏÏŞ
-//µ½¶ÔÓ¦²´Î»µÄ¾àÀë
+const int random_bfs_point = 100;
+int money;//é’±æ•° ï¼ˆåˆ†æ•°ï¼‰
+int boat_capacity;//èˆ¹è£…è´§ä¸Šé™
+//åˆ°å¯¹åº”æ³Šä½çš„è·ç¦»
 int berth_dis[n][n][berth_num];
+//åˆ°éšæœºç‚¹çš„è·ç¦»
+int random_dis[n][n][random_bfs_point + 50];
+//æ‰€æœ‰éšæœºç‚¹çš„åæ ‡
+vector<pair<int, int>> random_point;
 #ifdef _WIN32
-ofstream outfile;//ÈÕÖ¾ÎÄ¼ş
+ofstream outfile;//æ—¥å¿—æ–‡ä»¶
 #endif
 int id;
 /**
- * µØÍ¼
- * .¿ÕµØ
- * *º£Ñó
- * #ÕÏ°­
- * 0-9²´Î»ËùÔÚµÄÎ»ÖÃ
+ * åœ°å›¾
+ * .ç©ºåœ°
+ * *æµ·æ´‹
+ * #éšœç¢
+ * 0-9æ³Šä½æ‰€åœ¨çš„ä½ç½®
  * */
 char game_map[n][n];
 
@@ -31,32 +37,32 @@ void log(string s);
 
 queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
 
-void RobotFindNewGoal(queue<Cargo> cars, Robot& r);
+void RobotFindNewGoal(queue<Cargo> cars, Robot &r);
 
-//»õÎï
+//è´§ç‰©
 struct Cargo {
-    int x, y;//»õÎïµÄ×ø±ê
-    int val;//»õÎïµÄ¼ÛÖµ
-    int time;//»õÎïµÄ²úÉúÊ±¼ä
+    int x, y;//è´§ç‰©çš„åæ ‡
+    int val;//è´§ç‰©çš„ä»·å€¼
+    int time;//è´§ç‰©çš„äº§ç”Ÿæ—¶é—´
     Cargo(int x, int y, int val, int time) : x(x), y(y), val(val), time(time) {}
 } default_cargo(0, 0, 0, 0);
 
-//ËùÓĞ»õÎï¶ÓÁĞ
+//æ‰€æœ‰è´§ç‰©é˜Ÿåˆ—
 queue<Cargo> cargos;
-//ĞÂ²úÉúµÄ»õÎï¶ÓÁĞ
+//æ–°äº§ç”Ÿçš„è´§ç‰©é˜Ÿåˆ—
 deque<Cargo> new_cargos;
 
-//»úÆ÷ÈË
+//æœºå™¨äºº
 class Robot {
 public:
-    int goods{};//ÊÇ·ñĞ¯´ø»õÎï
-    int x{}, y{};//»úÆ÷ÈËµÄx£¬y×ø±ê
-    int status{};//»úÆ÷ÈËÊÇ·ñ´¦ÓÚÔËĞĞ×´Ì¬
-    int id{};//»úÆ÷ÈËµÄ±àºÅ
-    int cargotoberth{};//»úÆ÷ÈËĞ¯´øµÄ»õÎïµ½²´Î»µÄ¾àÀë
-    int berthid{ -1 };
-    Cargo cargo{ default_cargo };//»úÆ÷ÈËµÄ»õÎï
-    queue<pair<int, int>> road;//»úÆ÷ÈËµÄÂ·¾¶
+    int goods{};//æ˜¯å¦æºå¸¦è´§ç‰©
+    int x{}, y{};//æœºå™¨äººçš„xï¼Œyåæ ‡
+    int status{};//æœºå™¨äººæ˜¯å¦å¤„äºè¿è¡ŒçŠ¶æ€
+    int id{};//æœºå™¨äººçš„ç¼–å·
+    double cargotoberth{};//æœºå™¨äººæºå¸¦çš„è´§ç‰©åˆ°æ³Šä½çš„è·ç¦»
+    int berthid{-1};
+    Cargo cargo{default_cargo};//æœºå™¨äººçš„è´§ç‰©
+    queue<pair<int, int>> road;//æœºå™¨äººçš„è·¯å¾„
 
     Robot() = default;
 
@@ -65,29 +71,29 @@ public:
         y = startY;
     }
 
-    //»úÆ÷ÈË»ñÈ¡ÎïÆ·
+    //æœºå™¨äººè·å–ç‰©å“
     void getThings(int x, int y);
 
-    //»úÆ÷ÈË·ÅÏÂÎïÆ·
+    //æœºå™¨äººæ”¾ä¸‹ç‰©å“
     void putThings(int x, int y);
 
-    //ÉèÖÃ»úÆ÷ÈËÒªÄÃÈ¡Ê²Ã´ÎïÆ·
-    void setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r);
+    //è®¾ç½®æœºå™¨äººè¦æ‹¿å–ä»€ä¹ˆç‰©å“
+    void setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r);
 
-    //»úÆ÷ÈËÒÆ¶¯
+    //æœºå™¨äººç§»åŠ¨
     void move(int x, int y);
 
-    //ÖØÖÃ»úÆ÷ÈË
+    //é‡ç½®æœºå™¨äºº
     void Reset(bool complete);
 } robots[robot_num];
 
-//´¬
+//èˆ¹
 class Boat {
 public:
-    int num{};//×°ÔØµÄÊıÁ¿
-    int berthid{};//Í£²´µÄ²´Î»
-    int status{};//´¬µÄ×´Ì¬
-    int id{};//´¬µÄid
+    int num{};//è£…è½½çš„æ•°é‡
+    int berthid{};//åœæ³Šçš„æ³Šä½
+    int status{};//èˆ¹çš„çŠ¶æ€
+    int id{};//èˆ¹çš„id
     Boat() {}
 
     void go();
@@ -95,24 +101,27 @@ public:
     void ship(int id);
 } boats[boat_num];
 
-//²´Î»
+//æ³Šä½
 class Berth {
 public:
-    int x{};//²´Î»µÄx
-    int y{};//²´Î»µÄy
-    int id{};//²´Î»µÄ±àºÅ
-    int transport_time{};//µ½´ïĞéÄâµãµÄÊ±¼ä
-    int loading_speed{};//×°»õËÙ¶È
-    queue<pair<int, int>> things;//²´Î»ÉÏµÄÎïÆ·,´¢´æµÄÊÇÏà¶Ô×ø±ê
-    int boatid{ -1 };//Í£¿¿»òÕß×¼±¸Í£¿¿µÄ´¬Ö»±àºÅ
+    int x{};//æ³Šä½çš„x
+    int y{};//æ³Šä½çš„y
+    int id{};//æ³Šä½çš„ç¼–å·
+    int transport_time{};//åˆ°è¾¾è™šæ‹Ÿç‚¹çš„æ—¶é—´
+    int loading_speed{};//è£…è´§é€Ÿåº¦
+    queue<pair<int, int>> things;//æ³Šä½ä¸Šçš„ç‰©å“,å‚¨å­˜çš„æ˜¯ç›¸å¯¹åæ ‡
+    int boatid{-1};//åœé æˆ–è€…å‡†å¤‡åœé çš„èˆ¹åªç¼–å·
 
     Berth() = default;
 
     Berth(int x, int y, int transport_time, int loading_speed)
-        : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
+            : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
 
-    //²´Î»Ïò´¬×°»õ
+    //æ³Šä½å‘èˆ¹è£…è´§
     void stowage();
+
+    //è£…èˆ¹æ—¶é—´é€ æˆçš„ä»·å€¼
+    double transport_time_value();
 
 } berths[berth_num];
 
@@ -120,14 +129,14 @@ public:
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
     road = getRoadtoBerth(x, y, berths[berthid].x,
-        berths[berthid].y, berthid);
+                          berths[berthid].y, berthid);
 }
 
 void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)return;
-    //log("µÚ" + to_string(id) + "ºÅ»úÆ÷ÈËÏòµÚ" + to_string(num) + "ºÅ²´Î»·ÅÖÃ»õÎï");
+    //log("ç¬¬" + to_string(id) + "å·æœºå™¨äººå‘ç¬¬" + to_string(num) + "å·æ³Šä½æ”¾ç½®è´§ç‰©");
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
@@ -150,11 +159,11 @@ void Robot::Reset(bool complete) {
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
-    //    log("»úÆ÷ÈËid:" + to_string(id));
-    //    log("ĞÂÎïÆ·µÄx×ø±ê:" + to_string(c.x));
-    //    log("ĞÂÎïÆ·µÄy×ø±ê:" + to_string(c.y));
-    //    log("ĞÂÎïÆ·µÄÆ½¾ù¼ÛÖµ:" + to_string(c.val * 1.0 / (r.size() + dis)));
+void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r) {
+//    log("æœºå™¨äººid:" + to_string(id));
+//    log("æ–°ç‰©å“çš„xåæ ‡:" + to_string(c.x));
+//    log("æ–°ç‰©å“çš„yåæ ‡:" + to_string(c.y));
+//    log("æ–°ç‰©å“çš„å¹³å‡ä»·å€¼:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
@@ -162,10 +171,10 @@ void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
 }
 
 void Boat::go() {
-    //log("µÚ" + to_string(id) + "ºÅ´¬¿ªÏòĞéÄâµã");
+    //log("ç¬¬" + to_string(id) + "å·èˆ¹å¼€å‘è™šæ‹Ÿç‚¹");
     printf("go %d\n", id);
     if (berthid != -1) {
-        berths[berthid].boatid = -1;//¶ÔÓ¦µÄ´¬¹éÁã
+        berths[berthid].boatid = -1;//å¯¹åº”çš„èˆ¹å½’é›¶
     }
     num = 0;
     berthid = -1;
@@ -174,7 +183,7 @@ void Boat::go() {
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
-    //log("µÚ" + to_string(id) + "ºÅ´¬¿ªÏòµÚ" + to_string(goal) + "ºÅ²´Î»");
+    //log("ç¬¬" + to_string(id) + "å·èˆ¹å¼€å‘ç¬¬" + to_string(goal) + "å·æ³Šä½");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
@@ -188,18 +197,22 @@ void Berth::stowage() {
     if (boatid == -1)return;
     if (boats[boatid].status == 0)return;
     if (things.empty())return;
-    //log("µÚ" + to_string(id) + "ºÅ²´Î»ÏòµÚ" + to_string(boatid) + "ºÅ´¬×°ÔØ»õÎï");
+    //log("ç¬¬" + to_string(id) + "å·æ³Šä½å‘ç¬¬" + to_string(boatid) + "å·èˆ¹è£…è½½è´§ç‰©");
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             //pair<int, int> a = things.front();
             things.pop();
             boats[boatid].num++;
-        }
-        else return;
+        } else return;
     }
 }
 
-//³õÊ¼»¯
+double Berth::transport_time_value() {
+    if (boat_capacity >= 10)return 0;
+    else return (10 - boat_capacity) * 0.1 * transport_time;
+}
+
+//åˆå§‹åŒ–
 void Init() {
     for (int i = 0; i < n; i++)
         scanf("%s", game_map[i]);
@@ -228,12 +241,12 @@ void Init() {
     scanf("%d", &boat_capacity);
     char okk[100];
     scanf("%s", okk);
-    //³õÊ¼»¯ËùÓĞ²´Î»µ½ËùÓĞÎ»ÖÃµÄ¾àÀë
+    //åˆå§‹åŒ–æ‰€æœ‰æ³Šä½åˆ°æ‰€æœ‰ä½ç½®çš„è·ç¦»
     memset(berth_dis, -1, sizeof(berth_dis));
-    int dir[4][2] = { {0,  1},
+    int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0} };
+                     {-1, 0}};
     for (int i = 0; i < berth_num; i++) {
         queue<pair<int, pair<int, int>>> q;
         for (int j = 0; j < 4; j++) {
@@ -253,9 +266,76 @@ void Init() {
                 if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || berth_dis[nextx][nexty][i] != -1 ||
                     game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
                     continue;
-                //±ê¼ÇÒÑ¾­·ÃÎÊ
+                //æ ‡è®°å·²ç»è®¿é—®
                 berth_dis[nextx][nexty][i] = nowg + 1;
-                //¼ÓÈëÓÅÏÈ¶ÓÁĞ
+                //åŠ å…¥ä¼˜å…ˆé˜Ÿåˆ—
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
+    int sum = 0, f = 0;
+    bool vis[n][n];
+    memset(vis, false, sizeof(vis));
+    for (auto &s: game_map) {
+        for (char c: s) {
+            if (c == '#' || c == '*')continue;
+            sum++;
+        }
+    }
+    sum = sum / random_bfs_point;
+    for (int ii = 0; ii < n; ii++) {
+        if (random_point.size() >= random_bfs_point)break;
+        for (int jj = 0; jj < n; jj++) {
+            if (random_point.size() >= random_bfs_point)break;
+            if (game_map[ii][jj] == '#' || game_map[ii][jj] == '*' || vis[ii][jj])continue;
+            queue<pair<int, int>> q;
+            q.emplace(ii, jj);
+            vis[ii][jj] = true;
+            while (!q.empty()) {
+                int nowx = q.front().first;
+                int nowy = q.front().second;
+                q.pop();
+                f++;
+                if (f == sum) {
+                    f = 0;
+                    random_point.emplace_back(nowx, nowy);
+                }
+                for (int j = 0; j < 4; j++) {
+                    int nextx = nowx + dir[j][0];
+                    int nexty = nowy + dir[j][1];
+                    if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || vis[nextx][nexty] ||
+                        game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                        continue;
+                    //æ ‡è®°å·²ç»è®¿é—®
+                    vis[nextx][nexty] = true;
+                    //åŠ å…¥ä¼˜å…ˆé˜Ÿåˆ—
+                    q.emplace(nextx, nexty);
+                }
+            }
+        }
+    }
+    int size = random_point.size();
+    log("åˆå§‹åŒ–éšæœºç‚¹çš„ä¸ªæ•°:" + to_string(random_point.size()));
+    memset(random_dis, -1, sizeof(random_dis));
+    for (int i = 0; i < size; i++) {
+        pair<int, int> st = random_point[i];
+        queue<pair<int, pair<int, int>>> q;
+        q.emplace(0, make_pair(st.first, st.second));
+        random_dis[st.first][st.second][i] = 0;
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || random_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //æ ‡è®°å·²ç»è®¿é—®
+                random_dis[nextx][nexty][i] = nowg + 1;
+                //åŠ å…¥ä¼˜å…ˆé˜Ÿåˆ—
                 q.emplace(nowg + 1, make_pair(nextx, nexty));
             }
         }
@@ -264,13 +344,13 @@ void Init() {
     fflush(stdout);
 }
 
-//»úÆ÷ÈËµ½²´Î»µÄ¾àÀë
-int RobottoBerth(Robot& r) {
-    int min_time = 0x3f3f3f3f;
+//æœºå™¨äººåˆ°æ³Šä½çš„è·ç¦»
+int RobottoBerth(Robot &r) {
+    int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[r.x][r.y][i] == -1)continue;
-        int time = berth_dis[r.x][r.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
+        int time = berth_dis[r.x][r.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -279,13 +359,13 @@ int RobottoBerth(Robot& r) {
     return min_id;
 }
 
-//»õÎïµ½²´Î»µÄ¾àÀë
-int CargotoBerth(Cargo& c) {
-    int min_time = 0x3f3f3f3f;
+//è´§ç‰©åˆ°æ³Šä½çš„è·ç¦»
+int CargotoBerth(Cargo &c) {
+    int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[c.x][c.y][i] == -1)continue;
-        int time = berth_dis[c.x][c.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
+        int time = berth_dis[c.x][c.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -294,21 +374,21 @@ int CargotoBerth(Cargo& c) {
     return min_id;
 }
 
-//A*Ëã·¨
+//A*ç®—æ³•
 queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
     queue<pair<int, int>> road;
-    int dir[4][2] = { {0,  1},
+    int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0} };
+                     {-1, 0}};
     int dis[n][n];
     memset(dis, -1, sizeof(dis));
-    //ÓÅÏÈ¶ÓÁĞ
+    //ä¼˜å…ˆé˜Ÿåˆ—
     priority_queue<pair<int, pair<int, pair<int, int>>>> q;
     q.emplace(0, make_pair(0, make_pair(x, y)));
     dis[x][y] = 0;
     int flag = 0;
-    //A*Ëã·¨
+    //A*ç®—æ³•
     while (!q.empty()) {
         int nowx = q.top().second.second.first;
         int nowy = q.top().second.second.second;
@@ -324,19 +404,19 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
             if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
                 game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
                 continue;
-            //±ê¼ÇÒÑ¾­·ÃÎÊ
+            //æ ‡è®°å·²ç»è®¿é—®
             dis[nextx][nexty] = nowg + 1;
-            //¹À¼Ûº¯Êı
+            //ä¼°ä»·å‡½æ•°
             int nextg = nowg + 1;
-            //Âü¹ş¶Ù¾àÀë
+            //æ›¼å“ˆé¡¿è·ç¦»
             int h = abs(nextx - x1) + abs(nexty - y1);
-            //¼ÓÈëÓÅÏÈ¶ÓÁĞ
+            //åŠ å…¥ä¼˜å…ˆé˜Ÿåˆ—
             q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
         }
     }
     if (flag == 0)return road;
     int nowx = x1, nowy = y1;
-    //»ñÈ¡Â·¾¶
+    //è·å–è·¯å¾„
     while (nowx != x || nowy != y) {
         road.emplace(nowx, nowy);
         for (int i = 0; i < 4; i++) {
@@ -352,7 +432,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
             }
         }
     }
-    //·­×ªÂ·¾¶
+    //ç¿»è½¬è·¯å¾„
     stack<pair<int, int>> road1;
     while (!road.empty()) {
         road1.push(road.front());
@@ -367,19 +447,19 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
 
 queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     queue<pair<int, int>> road;
-    int dir[4][2] = { {0,  1},
+    int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0} };
+                     {-1, 0}};
     int dis[n][n];
     memset(dis, -1, sizeof(dis));
-    //ÓÅÏÈ¶ÓÁĞ
+    //ä¼˜å…ˆé˜Ÿåˆ—
     priority_queue<pair<int, pair<int, pair<int, int>>>> q;
     q.emplace(0, make_pair(0, make_pair(x, y)));
     dis[x][y] = 0;
     int flag = 0;
-    int fx, fy;//ÖÕµã×ø±ê
-    //A*Ëã·¨
+    int fx, fy;//ç»ˆç‚¹åæ ‡
+    //A*ç®—æ³•
     while (!q.empty()) {
         int nowx = q.top().second.second.first;
         int nowy = q.top().second.second.second;
@@ -397,19 +477,19 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
             if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
                 game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
                 continue;
-            //±ê¼ÇÒÑ¾­·ÃÎÊ
+            //æ ‡è®°å·²ç»è®¿é—®
             dis[nextx][nexty] = nowg + 1;
-            //¹À¼Ûº¯Êı
+            //ä¼°ä»·å‡½æ•°
             int nextg = nowg + 1;
-            //Âü¹ş¶Ù¾àÀë
+            //æ›¼å“ˆé¡¿è·ç¦»
             int h = berth_dis[nextx][nexty][berthid];
-            //¼ÓÈëÓÅÏÈ¶ÓÁĞ
+            //åŠ å…¥ä¼˜å…ˆé˜Ÿåˆ—
             q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
         }
     }
     if (flag == 0)return road;
     int nowx = fx, nowy = fy;
-    //»ñÈ¡Â·¾¶
+    //è·å–è·¯å¾„
     while (nowx != x || nowy != y) {
         road.emplace(nowx, nowy);
         for (int i = 0; i < 4; i++) {
@@ -425,7 +505,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
             }
         }
     }
-    //·­×ªÂ·¾¶
+    //ç¿»è½¬è·¯å¾„
     stack<pair<int, int>> road1;
     while (!road.empty()) {
         road1.push(road.front());
@@ -438,35 +518,45 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     return road;
 }
 
-//»ñÈ¡µ½ÎïÆ·µÄÂ·¾¶
+//è·å–åˆ°ç‰©å“çš„è·¯å¾„
 queue<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
     return Astar(x, y, x1, y1);
 }
 
-//»ñÈ¡µ½²´Î»µÄÂ·¾¶
+//è·å–åˆ°æ³Šä½çš„è·¯å¾„
 queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
     return Astar(x, y, x1, y1, berthid);
 }
 
-//»õÎïµ½»úÆ÷ÈËµÄ¾àÀë,Âü¹ş¶Ù¾àÀë
-int CargotoRobot(Cargo& c, Robot& r) {
-    return abs(c.x - r.x) + abs(c.y - r.y);
+//è´§ç‰©åˆ°æœºå™¨äººçš„è·ç¦»
+int CargotoRobot(Cargo &c, Robot &r) {
+    int min = MAXNUM;
+    int size = random_point.size();
+    for (int i = 0; i < size; i++) {
+        if (random_dis[c.x][c.y][i] == -1)continue;
+        if (random_dis[r.x][r.y][i] == -1)continue;
+        int z = random_dis[c.x][c.y][i] + random_dis[r.x][r.y][i];
+        if (z < min) {
+            min = z;
+        }
+    }
+    return min;
 }
 
-//»ñÈ¡Ò»¸öĞÂµÄÎïÆ·
-void RobotFindNewGoal(queue<Cargo> cars, Robot& r) {
+//è·å–ä¸€ä¸ªæ–°çš„ç‰©å“
+void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
-    int goal_id, goal_time;
+    int goal_id;
+    double goal_time;
     Cargo goal = default_cargo;
     for (int i = 0; i < cargos.size(); i++) {
         Cargo cargo = cars.front();
         cars.pop();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        //log("¾àÀë×î½üµÄ²´Î»:" + to_string(berth_id));
-        int berth_time =
-            berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         int robot_time = CargotoRobot(cargo, robots[i]);
+        if (robot_time == MAXNUM)continue;
         double value = cargo.val * 1.0 / (berth_time + robot_time);
         if (value > max_value) {
             max_value = value;
@@ -478,7 +568,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot& r) {
     if (max_value <= 0)return;
     queue<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
     if (road.empty())return;
-    //É¾³ı±»ÄÃ×ßµÄÎïÆ·
+    //åˆ é™¤è¢«æ‹¿èµ°çš„ç‰©å“
     queue<Cargo> c;
     while (!cargos.empty()) {
         Cargo ca = cargos.front();
@@ -490,10 +580,10 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot& r) {
     r.setGoal(goal, goal_time, goal_id, road);
 }
 
-//Ã¿Ö¡µÄÊäÈë
+//æ¯å¸§çš„è¾“å…¥
 void PerframeInput() {
     scanf("%d%d", &id, &money);
-    log("µÚ" + to_string(id) + "Ö¡");
+    log("ç¬¬" + to_string(id) + "å¸§");
     int num;
     scanf("%d", &num);
     for (int i = 1; i <= num; i++) {
@@ -510,17 +600,17 @@ void PerframeInput() {
     scanf("%s", okk);
 }
 
-//Ã¿Ö¡µÄ¸üĞÂ
+//æ¯å¸§çš„æ›´æ–°
 void PerframeUpdate() {
     queue<Cargo> c;
-    //µ±´óÓÚ1000Ö¡µÄÊ±ºòÎïÆ·ÏûÊ§
+    //å½“å¤§äº1000å¸§çš„æ—¶å€™ç‰©å“æ¶ˆå¤±
     for (int i = 0; i < cargos.size(); i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
         if (cargo.time - id > 1000)continue;
         c.push(cargo);
     }
-    //Ã¿Ö¡´¦ÀíÒ»¸öĞÂ»õÎï
+    //æ¯å¸§å¤„ç†ä¸€ä¸ªæ–°è´§ç‰©
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].goods == 0) {
@@ -533,55 +623,55 @@ void PerframeUpdate() {
         new_cargos.pop_front();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        int berth_time =
-            berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         double max_value = 0.0;
         int robot_id = -1;
-        //ÕÒµ½×îÓÅµÄ»úÆ÷ÈË
+        //æ‰¾åˆ°æœ€ä¼˜çš„æœºå™¨äºº
         for (int i = 0; i < robot_num; i++) {
-            //Èç¹û»úÆ÷ÈËĞ¯´ø»õÎï¾ÍÌø¹ı
+            //å¦‚æœæœºå™¨äººæºå¸¦è´§ç‰©å°±è·³è¿‡
             if (robots[i].goods == 1)continue;
-            //Èç¹û»úÆ÷ÈËµ½²»ÁË¶ÔÓ¦µÄ²´Î»
+            //å¦‚æœæœºå™¨äººåˆ°ä¸äº†å¯¹åº”çš„æ³Šä½
             if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
+            if (robot_time == MAXNUM)continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
-                robots[i].cargo.val * 1.0 / max(1, (int)robots[i].road.size() + robots[i].cargotoberth);
+                    robots[i].cargo.val * 1.0 /
+                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+//            double robot_value =
+//                    robots[i].cargo.val * 1.0 /
+//                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)continue;
             if (value - robot_value > max_value) {
                 max_value = value - robot_value;
                 robot_id = i;
             }
         }
-        //log("×îÓÅµÄ»úÆ÷ÈË:" + to_string(robot_id));
-        //Èç¹ûÃ»ÓĞÕÒµ½»úÆ÷ÈË¾Í°Ñ»õÎïÖØĞÂ·ÅÈë¶ÓÁĞ
+        //å¦‚æœæ²¡æœ‰æ‰¾åˆ°æœºå™¨äººå°±æŠŠè´§ç‰©é‡æ–°æ”¾å…¥é˜Ÿåˆ—
         if (robot_id == -1) {
             cargos.push(cargo);
             continue;
         }
         queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
-        //log("Â·¾¶³¤¶È:" + to_string(road.size()));
-        //log("»úÆ÷ÈË×ø±ê:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
-        //log("Â·¾¶µÚÒ»¸ö×ø±ê:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
-        //Èç¹ûÃ»ÓĞÕÒµ½Â·¾¶¾Í°Ñ»õÎïÖØĞÂ·ÅÈë¶ÓÁĞ
+        //å¦‚æœæ²¡æœ‰æ‰¾åˆ°è·¯å¾„å°±æŠŠè´§ç‰©é‡æ–°æ”¾å…¥é˜Ÿåˆ—
         if (road.empty()) {
             cargos.push(cargo);
             continue;
         }
-        //Èç¹û»úÆ÷ÈËÔÚÔËÊäÆäËû»õÎï£¬¾ÍÏÈ°Ñ»õÎïÖØĞÂ·ÅÈë¶ÓÁĞ
+        //å¦‚æœæœºå™¨äººåœ¨è¿è¾“å…¶ä»–è´§ç‰©ï¼Œå°±å…ˆæŠŠè´§ç‰©é‡æ–°æ”¾å…¥é˜Ÿåˆ—
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);
         }
         robots[robot_id].setGoal(cargo, berth_time, berth_id, road);
         break;
     }
-    //Ã»ÓĞÈÎÎñÄ¿±êµÄ»úÆ÷ÈË»ñµÃĞÂµÄÈÎÎñÄ¿±ê,ÓĞÄ¿±êµ«ÊÇÊ§°ÜµÄ»úÆ÷ÈËÖØĞÂ»ñÈ¡ĞÂµÄ²´Î»
+    //æ²¡æœ‰ä»»åŠ¡ç›®æ ‡çš„æœºå™¨äººè·å¾—æ–°çš„ä»»åŠ¡ç›®æ ‡,æœ‰ç›®æ ‡ä½†æ˜¯å¤±è´¥çš„æœºå™¨äººé‡æ–°è·å–æ–°çš„æ³Šä½
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].goods == 1 &&
-            robots[i].road.size() == 0) {
+            robots[i].road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
             robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
-                berths[berth_id].y, berth_id);
+                                            berths[berth_id].y, berth_id);
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
             RobotFindNewGoal(cargos, robots[i]);
@@ -592,51 +682,47 @@ void PerframeUpdate() {
     }
 }
 
-//Ã¿Ö¡µÄÊä³ö
+//æ¯å¸§çš„è¾“å‡º
 void PerframeOutput() {
-    //    log("µÚ" + to_string(id) + "Ö¡Êä³ö");
-    //    for (int i = 0; i < berth_num; i++) {
-    //        if (berths[i].things.empty())continue;
-    //        log("µÚ" + to_string(i) + "ºÅ²´Î»");
-    //        log("ÎïÆ·ÊıÁ¿:" + to_string(berths[i].things.size()));
-    //    }
+//    log("ç¬¬" + to_string(id) + "å¸§è¾“å‡º");
+//    for (int i = 0; i < berth_num; i++) {
+//        if (berths[i].things.empty())continue;
+//        log("ç¬¬" + to_string(i) + "å·æ³Šä½");
+//        log("ç‰©å“æ•°é‡:" + to_string(berths[i].things.size()));
+//    }
     for (int i = 0; i < robot_num; i++) {
-        //Èç¹û»úÆ÷ÈËÂ·¾¶²»Îª¿Õ¾Í¼ÌĞø×ß
+        //å¦‚æœæœºå™¨äººè·¯å¾„ä¸ä¸ºç©ºå°±ç»§ç»­èµ°
         if (!robots[i].road.empty()) {
             pair<int, int> next = robots[i].road.front();
             robots[i].road.pop();
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
                 robots[i].Reset(false);
-            }
-            else {
-                //»úÆ÷ÈËÒÆ¶¯
+            } else {
+                //æœºå™¨äººç§»åŠ¨
                 robots[i].move(next.first, next.second);
             }
             if (robots[i].road.empty()) {
                 if (robots[i].goods == 0) {
-                    //»úÆ÷ÈËÃ»ÓĞ»õÎï,¾ÍÈ¥ÄÃ»õÎï
+                    //æœºå™¨äººæ²¡æœ‰è´§ç‰©,å°±å»æ‹¿è´§ç‰©
                     robots[i].getThings(next.first, next.second);
-                }
-                else {
-                    //»úÆ÷ÈËÓĞ»õÎï,¾ÍÈ¥·Å»õÎï
+                } else {
+                    //æœºå™¨äººæœ‰è´§ç‰©,å°±å»æ”¾è´§ç‰©
                     robots[i].putThings(next.first, next.second);
                 }
             }
-        }
-        else if (robots[i].goods == 1) {//»úÆ÷ÈËÕıºÃÔÚ¸Û¿ÚÉÏµÄÊ±ºò
+        } else if (robots[i].goods == 1) {//æœºå™¨äººæ­£å¥½åœ¨æ¸¯å£ä¸Šçš„æ—¶å€™
             robots[i].putThings(robots[i].x, robots[i].y);
         }
     }
     for (int i = 0; i < boat_num; i++) {
         if (boats[i].status == 0)continue;
-        if (boats[i].num == boat_capacity ||//µ±×°ÂúµÄÊ±ºòÖ±½Ó³ö·¢¿ªÊ¼ÔËÊä
+        if (boats[i].num == boat_capacity ||//å½“è£…æ»¡çš„æ—¶å€™ç›´æ¥å‡ºå‘å¼€å§‹è¿è¾“
             boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + id > 14950 &&
-            boats[i].num != 0) {//µ±Ê±¼ä¿ìµ½µÄÊ±ºòÒ²Ö±½Ó¿ªÊ¼ÔËÊä
+            boats[i].num != 0) {//å½“æ—¶é—´å¿«åˆ°çš„æ—¶å€™ä¹Ÿç›´æ¥å¼€å§‹è¿è¾“
             boats[i].go();
             continue;
-        }
-        else if (boats[i].berthid == -1) {
+        } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatid != -1)continue;
@@ -656,11 +742,9 @@ void PerframeOutput() {
             }
             boats[i].ship(goal);
             continue;
-        }
-        else if (!berths[boats[i].berthid].things.empty()) {
+        } else if (!berths[boats[i].berthid].things.empty()) {
             continue;
-        }
-        else {
+        } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatid != -1)continue;
@@ -681,7 +765,7 @@ void PerframeOutput() {
     fflush(stdout);
 }
 
-//ÈÕÖ¾ĞÅÏ¢
+//æ—¥å¿—ä¿¡æ¯
 void log(string s) {
 #ifdef _WIN32
     outfile << s << endl;
@@ -690,7 +774,7 @@ void log(string s) {
 
 #ifdef _WIN32
 
-//´´½¨Ò»ÕÅµØÍ¼
+//åˆ›å»ºä¸€å¼ åœ°å›¾
 void CreateMap() {
     char map[n][n];
     memset(map, '.', sizeof(map));
@@ -698,11 +782,9 @@ void CreateMap() {
         for (int j = 0; j < n; j++) {
             if (i == n - 2) {
                 outfile << '#';
-            }
-            else if (i < 4 && j % 5 != 0 && j <= 50) {
+            } else if (i < 4 && j % 5 != 0 && j <= 50) {
                 outfile << 'B';
-            }
-            else {
+            } else {
                 outfile << map[i][j];
             }
         }
@@ -712,10 +794,10 @@ void CreateMap() {
 
 #endif
 
-//Ö÷º¯Êı
+//ä¸»å‡½æ•°
 int main() {
 #ifdef _WIN32
-    // ÒÔĞ´Ä£Ê½´ò¿ªÎÄ¼ş
+    // ä»¥å†™æ¨¡å¼æ‰“å¼€æ–‡ä»¶
     outfile.open("log.txt", ios::out | ios::trunc);
     //CreateMap();
 #endif

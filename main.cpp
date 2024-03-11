@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include<iostream>
+
 
 #define MAXNUM 0x3f3f3f3f
 using namespace std;
@@ -37,7 +39,7 @@ void log(string s);
 
 queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
 
-void RobotFindNewGoal(queue<Cargo> cars, Robot &r);
+void RobotFindNewGoal(queue<Cargo> cars, Robot& r);
 
 //货物
 struct Cargo {
@@ -60,8 +62,8 @@ public:
     int status{};//机器人是否处于运行状态
     int id{};//机器人的编号
     double cargotoberth{};//机器人携带的货物到泊位的距离
-    int berthid{-1};
-    Cargo cargo{default_cargo};//机器人的货物
+    int berthid{ -1 };
+    Cargo cargo{ default_cargo };//机器人的货物
     queue<pair<int, int>> road;//机器人的路径
 
     Robot() = default;
@@ -110,12 +112,12 @@ public:
     int transport_time{};//到达虚拟点的时间
     int loading_speed{};//装货速度
     queue<pair<int, int>> things;//泊位上的物品,储存的是相对坐标
-    int boatid{-1};//停靠或者准备停靠的船只编号
+    int boatid{ -1 };//停靠或者准备停靠的船只编号
 
     Berth() = default;
 
     Berth(int x, int y, int transport_time, int loading_speed)
-            : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
+        : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
 
     //泊位向船装货
     void stowage();
@@ -129,7 +131,7 @@ public:
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
     road = getRoadtoBerth(x, y, berths[berthid].x,
-                          berths[berthid].y, berthid);
+        berths[berthid].y, berthid);
 }
 
 void Robot::putThings(int x, int y) {
@@ -160,10 +162,10 @@ void Robot::Reset(bool complete) {
 }
 
 void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r) {
-//    log("机器人id:" + to_string(id));
-//    log("新物品的x坐标:" + to_string(c.x));
-//    log("新物品的y坐标:" + to_string(c.y));
-//    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+    //    log("机器人id:" + to_string(id));
+    //    log("新物品的x坐标:" + to_string(c.x));
+    //    log("新物品的y坐标:" + to_string(c.y));
+    //    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
@@ -203,7 +205,8 @@ void Berth::stowage() {
             //pair<int, int> a = things.front();
             things.pop();
             boats[boatid].num++;
-        } else return;
+        }
+        else return;
     }
 }
 
@@ -243,10 +246,10 @@ void Init() {
     scanf("%s", okk);
     //初始化所有泊位到所有位置的距离
     memset(berth_dis, -1, sizeof(berth_dis));
-    int dir[4][2] = {{0,  1},
+    int dir[4][2] = { {0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0}};
+                     {-1, 0} };
     for (int i = 0; i < berth_num; i++) {
         queue<pair<int, pair<int, int>>> q;
         for (int j = 0; j < 4; j++) {
@@ -276,8 +279,8 @@ void Init() {
     int sum = 0, f = 0;
     bool vis[n][n];
     memset(vis, false, sizeof(vis));
-    for (auto &s: game_map) {
-        for (char c: s) {
+    for (auto& s : game_map) {
+        for (char c : s) {
             if (c == '#' || c == '*')continue;
             sum++;
         }
@@ -345,7 +348,7 @@ void Init() {
 }
 
 //机器人到泊位的距离
-int RobottoBerth(Robot &r) {
+int RobottoBerth(Robot& r) {
     int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
@@ -360,7 +363,7 @@ int RobottoBerth(Robot &r) {
 }
 
 //货物到泊位的距离
-int CargotoBerth(Cargo &c) {
+int CargotoBerth(Cargo& c) {
     int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
@@ -375,12 +378,13 @@ int CargotoBerth(Cargo &c) {
 }
 
 //A*算法
-queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
+queue<pair<int, int>> Astar(int x, int y, int x1, int y1)//whj
+{
     queue<pair<int, int>> road;
-    int dir[4][2] = {{0,  1},
+    int dir[4][2] = { {0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0}};
+                     {-1, 0} };
     int dis[n][n];
     memset(dis, -1, sizeof(dis));
     //优先队列
@@ -389,22 +393,24 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
     dis[x][y] = 0;
     int flag = 0;
     //A*算法
-    while (!q.empty()) {
+    while (!q.empty())
+    {
         int nowx = q.top().second.second.first;
         int nowy = q.top().second.second.second;
         int nowg = q.top().second.first;
         q.pop();
-        if (nowx == x1 && nowy == y1) {
+        if (nowx == x1 && nowy == y1)
+        {
             flag = 1;
             break;
         }
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
-            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
-                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
-                continue;
-            //标记已经访问
+            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n) continue; //越界
+            if (dis[nextx][nexty] != -1 || game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*') continue; //走过or障碍
+
             dis[nextx][nexty] = nowg + 1;
             //估价函数
             int nextg = nowg + 1;
@@ -414,43 +420,52 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
             q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
         }
     }
-    if (flag == 0)return road;
+    if (flag == 0) return road; //找不到路径，返回空
     int nowx = x1, nowy = y1;
-    //获取路径
-    while (nowx != x || nowy != y) {
-        road.emplace(nowx, nowy);
-        for (int i = 0; i < 4; i++) {
+    //用栈获取路径，再反转到road
+    stack<pair<int, int>> road1;
+    while (nowx != x || nowy != y)
+    {
+        //road.emplace(nowx, nowy);
+        road1.push(make_pair(nowx, nowy));
+        for (int i = 0; i < 4; i++)
+        {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
-            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] == -1 ||
-                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
-                continue;
-            if (dis[nextx][nexty] == dis[nowx][nowy] - 1) {
+
+            //if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n) continue; //越界
+            //if (dis[nextx][nexty] != -1 || game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*') continue; //走过or障碍
+
+            if (dis[nextx][nexty] == dis[nowx][nowy] - 1)
+            {
                 nowx = nextx;
                 nowy = nexty;
                 break;
             }
         }
     }
-    //翻转路径
-    stack<pair<int, int>> road1;
-    while (!road.empty()) {
-        road1.push(road.front());
-        road.pop();
-    }
-    while (!road1.empty()) {
+    ////翻转路径
+    //stack<pair<int, int>> road1;
+    //while (!road.empty()) 
+    //{
+    //    road1.push(road.front());
+    //    road.pop();
+    //}
+    while (!road1.empty())
+    {
         road.push(road1.top());
         road1.pop();
     }
     return road;
 }
 
-queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
+queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) //whj
+{
     queue<pair<int, int>> road;
-    int dir[4][2] = {{0,  1},
+    int dir[4][2] = { {0,  1},
                      {0,  -1},
                      {1,  0},
-                     {-1, 0}};
+                     {-1, 0} };
     int dis[n][n];
     memset(dis, -1, sizeof(dis));
     //优先队列
@@ -460,23 +475,29 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     int flag = 0;
     int fx, fy;//终点坐标
     //A*算法
-    while (!q.empty()) {
+    while (!q.empty())
+    {
         int nowx = q.top().second.second.first;
         int nowy = q.top().second.second.second;
         int nowg = q.top().second.first;
         q.pop();
-        if (nowx == x1 && nowy == y1 || game_map[nowx][nowy] == '0' + berthid) {
+        if (nowx == x1 && nowy == y1 || game_map[nowx][nowy] == '0' + berthid)
+        {
             flag = 1;
             fx = nowx;
             fy = nowy;
             break;
         }
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
-            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
-                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
-                continue;
+            //if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
+            //    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+            //    continue;
+            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n) continue; //越界
+            if (dis[nextx][nexty] != -1 || game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*') continue; //走过or障碍
+
             //标记已经访问
             dis[nextx][nexty] = nowg + 1;
             //估价函数
@@ -490,33 +511,186 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     if (flag == 0)return road;
     int nowx = fx, nowy = fy;
     //获取路径
-    while (nowx != x || nowy != y) {
-        road.emplace(nowx, nowy);
-        for (int i = 0; i < 4; i++) {
+    stack<pair<int, int>> road1;
+    while (nowx != x || nowy != y)
+    {
+        /*road.emplace(nowx, nowy);*/
+        road1.push(make_pair(nowx, nowy));
+        for (int i = 0; i < 4; i++)
+        {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
-            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] == -1 ||
-                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
-                continue;
-            if (dis[nextx][nexty] == dis[nowx][nowy] - 1) {
+            //if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] == -1 ||
+            //    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+            //    continue;
+            //if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n) continue; //越界
+            //if (dis[nextx][nexty] != -1 || game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*') continue; //走过or障碍
+
+            if (dis[nextx][nexty] == dis[nowx][nowy] - 1)
+            {
                 nowx = nextx;
                 nowy = nexty;
                 break;
             }
         }
     }
-    //翻转路径
-    stack<pair<int, int>> road1;
-    while (!road.empty()) {
-        road1.push(road.front());
-        road.pop();
-    }
+    ////翻转路径
+    //stack<pair<int, int>> road1;
+    //while (!road.empty()) {
+    //    road1.push(road.front());
+    //    road.pop();
+    //}
     while (!road1.empty()) {
         road.push(road1.top());
         road1.pop();
     }
     return road;
 }
+
+
+//
+//queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
+//    queue<pair<int, int>> road;
+//    int dir[4][2] = { {0,  1},
+//                     {0,  -1},
+//                     {1,  0},
+//                     {-1, 0} };
+//    int dis[n][n];
+//    memset(dis, -1, sizeof(dis));
+//    //优先队列
+//    priority_queue<pair<int, pair<int, pair<int, int>>>> q;
+//    q.emplace(0, make_pair(0, make_pair(x, y)));
+//    dis[x][y] = 0;
+//    int flag = 0;
+//    //A*算法
+//    while (!q.empty()) {
+//        int nowx = q.top().second.second.first;
+//        int nowy = q.top().second.second.second;
+//        int nowg = q.top().second.first;
+//        q.pop();
+//        if (nowx == x1 && nowy == y1) {
+//            flag = 1;
+//            break;
+//        }
+//        for (int i = 0; i < 4; i++) {
+//            int nextx = nowx + dir[i][0];
+//            int nexty = nowy + dir[i][1];
+//            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
+//                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+//                continue;
+//            //标记已经访问
+//            dis[nextx][nexty] = nowg + 1;
+//            //估价函数
+//            int nextg = nowg + 1;
+//            //曼哈顿距离
+//            int h = abs(nextx - x1) + abs(nexty - y1);
+//            //加入优先队列
+//            q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
+//        }
+//    }
+//    if (flag == 0)return road;
+//    int nowx = x1, nowy = y1;
+//    //获取路径
+//    while (nowx != x || nowy != y) {
+//        road.emplace(nowx, nowy);
+//        for (int i = 0; i < 4; i++) {
+//            int nextx = nowx + dir[i][0];
+//            int nexty = nowy + dir[i][1];
+//            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] == -1 ||
+//                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+//                continue;
+//            if (dis[nextx][nexty] == dis[nowx][nowy] - 1) {
+//                nowx = nextx;
+//                nowy = nexty;
+//                break;
+//            }
+//        }
+//    }
+//    //翻转路径
+//    stack<pair<int, int>> road1;
+//    while (!road.empty()) {
+//        road1.push(road.front());
+//        road.pop();
+//    }
+//    while (!road1.empty()) {
+//        road.push(road1.top());
+//        road1.pop();
+//    }
+//    return road;
+//}
+//
+//queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
+//    queue<pair<int, int>> road;
+//    int dir[4][2] = { {0,  1},
+//                     {0,  -1},
+//                     {1,  0},
+//                     {-1, 0} };
+//    int dis[n][n];
+//    memset(dis, -1, sizeof(dis));
+//    //优先队列
+//    priority_queue<pair<int, pair<int, pair<int, int>>>> q;
+//    q.emplace(0, make_pair(0, make_pair(x, y)));
+//    dis[x][y] = 0;
+//    int flag = 0;
+//    int fx, fy;//终点坐标
+//    //A*算法
+//    while (!q.empty()) {
+//        int nowx = q.top().second.second.first;
+//        int nowy = q.top().second.second.second;
+//        int nowg = q.top().second.first;
+//        q.pop();
+//        if (nowx == x1 && nowy == y1 || game_map[nowx][nowy] == '0' + berthid) {
+//            flag = 1;
+//            fx = nowx;
+//            fy = nowy;
+//            break;
+//        }
+//        for (int i = 0; i < 4; i++) {
+//            int nextx = nowx + dir[i][0];
+//            int nexty = nowy + dir[i][1];
+//            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] != -1 ||
+//                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+//                continue;
+//            //标记已经访问
+//            dis[nextx][nexty] = nowg + 1;
+//            //估价函数
+//            int nextg = nowg + 1;
+//            //曼哈顿距离
+//            int h = berth_dis[nextx][nexty][berthid];
+//            //加入优先队列
+//            q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
+//        }
+//    }
+//    if (flag == 0)return road;
+//    int nowx = fx, nowy = fy;
+//    //获取路径
+//    while (nowx != x || nowy != y) {
+//        road.emplace(nowx, nowy);
+//        for (int i = 0; i < 4; i++) {
+//            int nextx = nowx + dir[i][0];
+//            int nexty = nowy + dir[i][1];
+//            if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || dis[nextx][nexty] == -1 ||
+//                game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+//                continue;
+//            if (dis[nextx][nexty] == dis[nowx][nowy] - 1) {
+//                nowx = nextx;
+//                nowy = nexty;
+//                break;
+//            }
+//        }
+//    }
+//    //翻转路径
+//    stack<pair<int, int>> road1;
+//    while (!road.empty()) {
+//        road1.push(road.front());
+//        road.pop();
+//    }
+//    while (!road1.empty()) {
+//        road.push(road1.top());
+//        road1.pop();
+//    }
+//    return road;
+//}
 
 //获取到物品的路径
 queue<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
@@ -529,7 +703,7 @@ queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) 
 }
 
 //货物到机器人的距离
-int CargotoRobot(Cargo &c, Robot &r) {
+int CargotoRobot(Cargo& c, Robot& r) {
     int min = MAXNUM;
     int size = random_point.size();
     for (int i = 0; i < size; i++) {
@@ -544,7 +718,7 @@ int CargotoRobot(Cargo &c, Robot &r) {
 }
 
 //获取一个新的物品
-void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
+void RobotFindNewGoal(queue<Cargo> cars, Robot& r) {
     double max_value = 0;
     int goal_id;
     double goal_time;
@@ -636,11 +810,11 @@ void PerframeUpdate() {
             if (robot_time == MAXNUM)continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
-                    robots[i].cargo.val * 1.0 /
-                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
-//            double robot_value =
-//                    robots[i].cargo.val * 1.0 /
-//                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
+                robots[i].cargo.val * 1.0 /
+                max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+            //            double robot_value =
+            //                    robots[i].cargo.val * 1.0 /
+            //                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)continue;
             if (value - robot_value > max_value) {
                 max_value = value - robot_value;
@@ -671,7 +845,7 @@ void PerframeUpdate() {
             robots[i].road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
             robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
-                                            berths[berth_id].y, berth_id);
+                berths[berth_id].y, berth_id);
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
             RobotFindNewGoal(cargos, robots[i]);
@@ -684,12 +858,12 @@ void PerframeUpdate() {
 
 //每帧的输出
 void PerframeOutput() {
-//    log("第" + to_string(id) + "帧输出");
-//    for (int i = 0; i < berth_num; i++) {
-//        if (berths[i].things.empty())continue;
-//        log("第" + to_string(i) + "号泊位");
-//        log("物品数量:" + to_string(berths[i].things.size()));
-//    }
+    //    log("第" + to_string(id) + "帧输出");
+    //    for (int i = 0; i < berth_num; i++) {
+    //        if (berths[i].things.empty())continue;
+    //        log("第" + to_string(i) + "号泊位");
+    //        log("物品数量:" + to_string(berths[i].things.size()));
+    //    }
     for (int i = 0; i < robot_num; i++) {
         //如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
@@ -698,7 +872,8 @@ void PerframeOutput() {
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
                 robots[i].Reset(false);
-            } else {
+            }
+            else {
                 //机器人移动
                 robots[i].move(next.first, next.second);
             }
@@ -706,12 +881,14 @@ void PerframeOutput() {
                 if (robots[i].goods == 0) {
                     //机器人没有货物,就去拿货物
                     robots[i].getThings(next.first, next.second);
-                } else {
+                }
+                else {
                     //机器人有货物,就去放货物
                     robots[i].putThings(next.first, next.second);
                 }
             }
-        } else if (robots[i].goods == 1) {//机器人正好在港口上的时候
+        }
+        else if (robots[i].goods == 1) {//机器人正好在港口上的时候
             robots[i].putThings(robots[i].x, robots[i].y);
         }
     }
@@ -722,7 +899,8 @@ void PerframeOutput() {
             boats[i].num != 0) {//当时间快到的时候也直接开始运输
             boats[i].go();
             continue;
-        } else if (boats[i].berthid == -1) {
+        }
+        else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatid != -1)continue;
@@ -742,9 +920,11 @@ void PerframeOutput() {
             }
             boats[i].ship(goal);
             continue;
-        } else if (!berths[boats[i].berthid].things.empty()) {
+        }
+        else if (!berths[boats[i].berthid].things.empty()) {
             continue;
-        } else {
+        }
+        else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatid != -1)continue;
@@ -782,9 +962,11 @@ void CreateMap() {
         for (int j = 0; j < n; j++) {
             if (i == n - 2) {
                 outfile << '#';
-            } else if (i < 4 && j % 5 != 0 && j <= 50) {
+            }
+            else if (i < 4 && j % 5 != 0 && j <= 50) {
                 outfile << 'B';
-            } else {
+            }
+            else {
                 outfile << map[i][j];
             }
         }

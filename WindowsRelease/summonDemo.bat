@@ -1,0 +1,1 @@
+g++ .\sdk\main.cpp -o .\Demo\main.exe

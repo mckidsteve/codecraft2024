@@ -1,0 +1,1 @@
+.\PreliminaryJudge.exe -f 15 -m maps\map1.txt -l INFO -d .\output.txt ".\Demo\main.exe"

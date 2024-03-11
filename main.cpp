@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 
+#define MAXNUM 0x3f3f3f3f
 using namespace std;
 
 const int n = 200;
@@ -345,7 +346,7 @@ void Init() {
 
 //机器人到泊位的距离
 int RobottoBerth(Robot &r) {
-    int min_time = 0x3f3f3f3f;
+    int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[r.x][r.y][i] == -1)continue;
@@ -360,7 +361,7 @@ int RobottoBerth(Robot &r) {
 
 //货物到泊位的距离
 int CargotoBerth(Cargo &c) {
-    int min_time = 0x3f3f3f3f;
+    int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[c.x][c.y][i] == -1)continue;
@@ -527,9 +528,19 @@ queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) 
     return Astar(x, y, x1, y1, berthid);
 }
 
-//货物到机器人的距离,曼哈顿距离
+//货物到机器人的距离
 int CargotoRobot(Cargo &c, Robot &r) {
-    return abs(c.x - r.x) + abs(c.y - r.y);
+    int min = MAXNUM;
+    int size = random_point.size();
+    for (int i = 0; i < size; i++) {
+        if (random_dis[c.x][c.y][i] == -1)continue;
+        if (random_dis[r.x][r.y][i] == -1)continue;
+        int z = random_dis[c.x][c.y][i] + random_dis[r.x][r.y][i];
+        if (z < min) {
+            min = z;
+        }
+    }
+    return min;
 }
 
 //获取一个新的物品
@@ -545,6 +556,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         if (berth_id == -1)continue;
         double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         int robot_time = CargotoRobot(cargo, robots[i]);
+        if (robot_time == MAXNUM)continue;
         double value = cargo.val * 1.0 / (berth_time + robot_time);
         if (value > max_value) {
             max_value = value;
@@ -621,10 +633,14 @@ void PerframeUpdate() {
             //如果机器人到不了对应的泊位
             if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
+            if (robot_time == MAXNUM)continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
                     robots[i].cargo.val * 1.0 /
                     max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+//            double robot_value =
+//                    robots[i].cargo.val * 1.0 /
+//                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)continue;
             if (value - robot_value > max_value) {
                 max_value = value - robot_value;

@@ -520,11 +520,13 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
 
 //获取到物品的路径
 queue<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
+    log("计算机器人到物品的路径");
     return Astar(x, y, x1, y1);
 }
 
 //获取到泊位的路径
 queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
+    log("计算机器人到港口的路径");
     return Astar(x, y, x1, y1, berthid);
 }
 
@@ -613,6 +615,7 @@ void PerframeUpdate() {
     //每帧处理一个新货物
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {
+        if (robots[i].status == 0)continue;
         if (robots[i].goods == 0) {
             have_robot = true;
             break;
@@ -628,6 +631,7 @@ void PerframeUpdate() {
         int robot_id = -1;
         //找到最优的机器人
         for (int i = 0; i < robot_num; i++) {
+            if (robots[i].status == 0)continue;
             //如果机器人携带货物就跳过
             if (robots[i].goods == 1)continue;
             //如果机器人到不了对应的泊位
@@ -667,6 +671,7 @@ void PerframeUpdate() {
     }
     //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
+        if (robots[i].status == 0)continue;
         if (robots[i].goods == 1 &&
             robots[i].road.empty()) {
             int berth_id = RobottoBerth(robots[i]);

@@ -6,10 +6,15 @@ const int n = 200;
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
+const int random_bfs_point = 100;
 int money;//钱数 （分数）
 int boat_capacity;//船装货上限
 //到对应泊位的距离
 int berth_dis[n][n][berth_num];
+//到随机点的距离
+int random_dis[n][n][random_bfs_point + 50];
+//所有随机点的坐标
+vector<pair<int, int>> random_point;
 #ifdef _WIN32
 ofstream outfile;//日志文件
 #endif
@@ -154,10 +159,10 @@ void Robot::Reset(bool complete) {
 }
 
 void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r) {
-    log("机器人id:" + to_string(id));
-    log("新物品的x坐标:" + to_string(c.x));
-    log("新物品的y坐标:" + to_string(c.y));
-    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+//    log("机器人id:" + to_string(id));
+//    log("新物品的x坐标:" + to_string(c.x));
+//    log("新物品的y坐标:" + to_string(c.y));
+//    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
@@ -262,6 +267,73 @@ void Init() {
                     continue;
                 //标记已经访问
                 berth_dis[nextx][nexty][i] = nowg + 1;
+                //加入优先队列
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
+    int sum = 0, f = 0;
+    bool vis[n][n];
+    memset(vis, false, sizeof(vis));
+    for (auto &s: game_map) {
+        for (char c: s) {
+            if (c == '#' || c == '*')continue;
+            sum++;
+        }
+    }
+    sum = sum / random_bfs_point;
+    for (int ii = 0; ii < n; ii++) {
+        if (random_point.size() >= random_bfs_point)break;
+        for (int jj = 0; jj < n; jj++) {
+            if (random_point.size() >= random_bfs_point)break;
+            if (game_map[ii][jj] == '#' || game_map[ii][jj] == '*' || vis[ii][jj])continue;
+            queue<pair<int, int>> q;
+            q.emplace(ii, jj);
+            vis[ii][jj] = true;
+            while (!q.empty()) {
+                int nowx = q.front().first;
+                int nowy = q.front().second;
+                q.pop();
+                f++;
+                if (f == sum) {
+                    f = 0;
+                    random_point.emplace_back(nowx, nowy);
+                }
+                for (int j = 0; j < 4; j++) {
+                    int nextx = nowx + dir[j][0];
+                    int nexty = nowy + dir[j][1];
+                    if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || vis[nextx][nexty] ||
+                        game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                        continue;
+                    //标记已经访问
+                    vis[nextx][nexty] = true;
+                    //加入优先队列
+                    q.emplace(nextx, nexty);
+                }
+            }
+        }
+    }
+    int size = random_point.size();
+    log("初始化随机点的个数:" + to_string(random_point.size()));
+    memset(random_dis, -1, sizeof(random_dis));
+    for (int i = 0; i < size; i++) {
+        pair<int, int> st = random_point[i];
+        queue<pair<int, pair<int, int>>> q;
+        q.emplace(0, make_pair(st.first, st.second));
+        random_dis[st.first][st.second][i] = 0;
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || random_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //标记已经访问
+                random_dis[nextx][nexty][i] = nowg + 1;
                 //加入优先队列
                 q.emplace(nowg + 1, make_pair(nextx, nexty));
             }

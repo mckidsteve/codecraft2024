@@ -1,5 +1,8 @@
-class Robot
-{
+#pragma once
+
+#include "CARGO.hpp"
+
+class Robot {
 public:
     int goods{};           // 是否携带货物
     int x{}, y{};          // 机器人的x，y坐标
@@ -8,12 +11,11 @@ public:
     double cargotoberth{}; // 机器人携带的货物到泊位的距离
     int berthid{-1};
     Cargo cargo{default_cargo}; // 机器人的货物
-    queue<pair<int, int>> road; // 机器人的路径
+    vector<pair<int, int>> road; // 机器人的路径
 
     Robot() = default;
 
-    Robot(int startX, int startY)
-    {
+    Robot(int startX, int startY) {
         x = startX;
         y = startY;
     }
@@ -25,7 +27,7 @@ public:
     void putThings(int x, int y);
 
     // 设置机器人要拿取什么物品
-    void setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r);
+    void setGoal(Cargo c, double dis, int brenth_id, vector<pair<int, int>> r);
 
     // 机器人移动
     void move(int x, int y);

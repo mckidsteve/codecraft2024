@@ -1,10 +1,9 @@
+#pragma once
 
-void Boat::go()
-{
+void Boat::go() {
     // log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
-    if (berthid != -1)
-    {
+    if (berthid != -1) {
         berths[berthid].boatid = -1; // 对应的船归零
     }
     num = 0;
@@ -12,14 +11,12 @@ void Boat::go()
     status = 0;
 }
 
-void Boat::ship(int goal)
-{
+void Boat::ship(int goal) {
     if (goal == -1)
         return;
     // log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
-    if (berthid != -1)
-    {
+    if (berthid != -1) {
         berths[berthid].boatid = -1;
     }
     berths[goal].boatid = id;

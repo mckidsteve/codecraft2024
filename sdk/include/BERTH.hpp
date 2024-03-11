@@ -1,5 +1,6 @@
-class Berth
-{
+#pragma once
+
+class Berth {
 public:
     int x{};                      // 泊位的x
     int y{};                      // 泊位的y
@@ -12,7 +13,7 @@ public:
     Berth() = default;
 
     Berth(int x, int y, int transport_time, int loading_speed)
-        : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
+            : x(x), y(y), transport_time(transport_time), loading_speed(loading_speed) {}
 
     // 泊位向船装货
     void stowage();

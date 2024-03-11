@@ -1,6 +1,7 @@
+#pragma once
+
 // 船
-class Boat
-{
+class Boat {
 public:
     int num{};     // 装载的数量
     int berthid{}; // 停泊的泊位

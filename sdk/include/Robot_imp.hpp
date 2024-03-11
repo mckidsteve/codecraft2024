@@ -1,12 +1,12 @@
-void Robot::getThings(int x, int y)
-{
+#pragma once
+
+void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
     road = getRoadtoBerth(x, y, berths[berthid].x,
                           berths[berthid].y, berthid);
 }
 
-void Robot::putThings(int x, int y)
-{
+void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)
@@ -19,8 +19,7 @@ void Robot::putThings(int x, int y)
     this->Reset(true);
 }
 
-void Robot::move(int x, int y)
-{
+void Robot::move(int x, int y) {
     if (this->x - x == 1)
         printf("move %d %d\n", id, 2);
     else if (this->x - x == -1)
@@ -31,10 +30,8 @@ void Robot::move(int x, int y)
         printf("move %d %d\n", id, 0);
 }
 
-void Robot::Reset(bool complete)
-{
-    while (!road.empty())
-        road.pop();
+void Robot::Reset(bool complete) {
+    road.clear();
     cargotoberth = 0;
     berthid = -1;
     if (!complete && goods == 0)
@@ -42,8 +39,7 @@ void Robot::Reset(bool complete)
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r)
-{
+void Robot::setGoal(Cargo c, double dis, int brenth_id, vector<pair<int, int>> r) {
     //    log("机器人id:" + to_string(id));
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));

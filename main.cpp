@@ -53,7 +53,7 @@ public:
     int x{}, y{};//机器人的x，y坐标
     int status{};//机器人是否处于运行状态
     int id{};//机器人的编号
-    int cargotoberth{};//机器人携带的货物到泊位的距离
+    double cargotoberth{};//机器人携带的货物到泊位的距离
     int berthid{-1};
     Cargo cargo{default_cargo};//机器人的货物
     queue<pair<int, int>> road;//机器人的路径
@@ -72,7 +72,7 @@ public:
     void putThings(int x, int y);
 
     //设置机器人要拿取什么物品
-    void setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r);
+    void setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r);
 
     //机器人移动
     void move(int x, int y);
@@ -114,6 +114,9 @@ public:
     //泊位向船装货
     void stowage();
 
+    //装船时间造成的价值
+    double transport_time_value();
+
 } berths[berth_num];
 
 
@@ -150,11 +153,11 @@ void Robot::Reset(bool complete) {
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, int dis, int brenth_id, queue<pair<int, int>> r) {
-//    log("机器人id:" + to_string(id));
-//    log("新物品的x坐标:" + to_string(c.x));
-//    log("新物品的y坐标:" + to_string(c.y));
-//    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r) {
+    log("机器人id:" + to_string(id));
+    log("新物品的x坐标:" + to_string(c.x));
+    log("新物品的y坐标:" + to_string(c.y));
+    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
@@ -196,6 +199,11 @@ void Berth::stowage() {
             boats[boatid].num++;
         } else return;
     }
+}
+
+double Berth::transport_time_value() {
+    if (boat_capacity >= 10)return 0;
+    else return (10 - boat_capacity) * 0.1 * transport_time;
 }
 
 //初始化
@@ -269,7 +277,7 @@ int RobottoBerth(Robot &r) {
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[r.x][r.y][i] == -1)continue;
-        int time = berth_dis[r.x][r.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
+        int time = berth_dis[r.x][r.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -284,7 +292,7 @@ int CargotoBerth(Cargo &c) {
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[c.x][c.y][i] == -1)continue;
-        int time = berth_dis[c.x][c.y][i] + (boat_capacity < 10 ? berths[i].transport_time : 0);
+        int time = berth_dis[c.x][c.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -455,16 +463,15 @@ int CargotoRobot(Cargo &c, Robot &r) {
 //获取一个新的物品
 void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
-    int goal_id, goal_time;
+    int goal_id;
+    double goal_time;
     Cargo goal = default_cargo;
     for (int i = 0; i < cargos.size(); i++) {
         Cargo cargo = cars.front();
         cars.pop();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        //log("距离最近的泊位:" + to_string(berth_id));
-        int berth_time =
-                berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         int robot_time = CargotoRobot(cargo, robots[i]);
         double value = cargo.val * 1.0 / (berth_time + robot_time);
         if (value > max_value) {
@@ -532,8 +539,7 @@ void PerframeUpdate() {
         new_cargos.pop_front();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        int berth_time =
-                berth_dis[cargo.x][cargo.y][berth_id] + (boat_capacity < 10 ? berths[berth_id].transport_time : 0);
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         double max_value = 0.0;
         int robot_id = -1;
         //找到最优的机器人
@@ -545,23 +551,20 @@ void PerframeUpdate() {
             int robot_time = CargotoRobot(cargo, robots[i]);
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
-                    robots[i].cargo.val * 1.0 / max(1, (int) robots[i].road.size() + robots[i].cargotoberth);
+                    robots[i].cargo.val * 1.0 /
+                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
             if (robot_value > value)continue;
             if (value - robot_value > max_value) {
                 max_value = value - robot_value;
                 robot_id = i;
             }
         }
-        //log("最优的机器人:" + to_string(robot_id));
         //如果没有找到机器人就把货物重新放入队列
         if (robot_id == -1) {
             cargos.push(cargo);
             continue;
         }
         queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
-        //log("路径长度:" + to_string(road.size()));
-        //log("机器人坐标:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
-        //log("路径第一个坐标:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
         //如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
             cargos.push(cargo);
@@ -577,7 +580,7 @@ void PerframeUpdate() {
     //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].goods == 1 &&
-            robots[i].road.size() == 0) {
+            robots[i].road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
             robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
                                             berths[berth_id].y, berth_id);

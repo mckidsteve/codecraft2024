@@ -7,6 +7,8 @@ namespace Robotlib {
     public:
         State(int x, int y, int time) : x(x), y(y), time(time) {}
 
+        State(pair<int, int> s, int time) : x(s.first), y(s.second), time(time) {}
+
         bool operator==(const State &other) const {
             return x == other.x && y == other.y && time == other.time;
         }

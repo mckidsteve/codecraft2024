@@ -1,13 +1,21 @@
 #include <bits/stdc++.h>
 
+#define MAXNUM 0x3f3f3f3f
 using namespace std;
 
 const int n = 200;
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
+const int random_bfs_point = 100;
 int money;//钱数 （分数）
 int boat_capacity;//船装货上限
+//到对应泊位的距离
+int berth_dis[n][n][berth_num];
+//到随机点的距离
+int random_dis[n][n][random_bfs_point + 50];
+//所有随机点的坐标
+vector<pair<int, int>> random_point;
 #ifdef _WIN32
 ofstream outfile;//日志文件
 #endif
@@ -51,7 +59,7 @@ public:
     int x{}, y{};//机器人的x，y坐标
     int status{};//机器人是否处于运行状态
     int id{};//机器人的编号
-    int cargotoberth{};//机器人携带的货物到泊位的距离
+    double cargotoberth{};//机器人携带的货物到泊位的距离
     int berthid{-1};
     Cargo cargo{default_cargo};//机器人的货物
     queue<pair<int, int>> road;//机器人的路径
@@ -69,11 +77,14 @@ public:
     //机器人放下物品
     void putThings(int x, int y);
 
+    //设置机器人要拿取什么物品
+    void setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r);
+
     //机器人移动
     void move(int x, int y);
 
     //重置机器人
-    void Reset();
+    void Reset(bool complete);
 } robots[robot_num];
 
 //船
@@ -109,6 +120,9 @@ public:
     //泊位向船装货
     void stowage();
 
+    //装船时间造成的价值
+    double transport_time_value();
+
 } berths[berth_num];
 
 
@@ -121,13 +135,13 @@ void Robot::getThings(int x, int y) {
 void Robot::putThings(int x, int y) {
     printf("pull %d\n", id);
     int num = game_map[x][y] - '0';
-    log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     if (num < 0 || num >= berth_num)return;
+    //log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
-    this->Reset();
+    this->Reset(true);
 }
 
 void Robot::move(int x, int y) {
@@ -137,16 +151,27 @@ void Robot::move(int x, int y) {
     else if (this->y - y == -1)printf("move %d %d\n", id, 0);
 }
 
-void Robot::Reset() {
+void Robot::Reset(bool complete) {
     while (!road.empty())road.pop();
     cargotoberth = 0;
     berthid = -1;
-    cargos.push(cargo);
+    if (!complete && goods == 0)cargos.push(cargo);
     cargo = default_cargo;
 }
 
+void Robot::setGoal(Cargo c, double dis, int brenth_id, queue<pair<int, int>> r) {
+//    log("机器人id:" + to_string(id));
+//    log("新物品的x坐标:" + to_string(c.x));
+//    log("新物品的y坐标:" + to_string(c.y));
+//    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+    cargo = c;
+    cargotoberth = dis;
+    berthid = brenth_id;
+    road = r;
+}
+
 void Boat::go() {
-    log("第" + to_string(id) + "号船开向虚拟点");
+    //log("第" + to_string(id) + "号船开向虚拟点");
     printf("go %d\n", id);
     if (berthid != -1) {
         berths[berthid].boatid = -1;//对应的船归零
@@ -158,7 +183,7 @@ void Boat::go() {
 
 void Boat::ship(int goal) {
     if (goal == -1)return;
-    log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
+    //log("第" + to_string(id) + "号船开向第" + to_string(goal) + "号泊位");
     printf("ship %d %d\n", id, goal);
     if (berthid != -1) {
         berths[berthid].boatid = -1;
@@ -172,7 +197,7 @@ void Berth::stowage() {
     if (boatid == -1)return;
     if (boats[boatid].status == 0)return;
     if (things.empty())return;
-    log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
+    //log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             //pair<int, int> a = things.front();
@@ -180,6 +205,11 @@ void Berth::stowage() {
             boats[boatid].num++;
         } else return;
     }
+}
+
+double Berth::transport_time_value() {
+    if (boat_capacity >= 10)return 0;
+    else return (10 - boat_capacity) * 0.1 * transport_time;
 }
 
 //初始化
@@ -211,16 +241,131 @@ void Init() {
     scanf("%d", &boat_capacity);
     char okk[100];
     scanf("%s", okk);
+    //初始化所有泊位到所有位置的距离
+    memset(berth_dis, -1, sizeof(berth_dis));
+    int dir[4][2] = {{0,  1},
+                     {0,  -1},
+                     {1,  0},
+                     {-1, 0}};
+    for (int i = 0; i < berth_num; i++) {
+        queue<pair<int, pair<int, int>>> q;
+        for (int j = 0; j < 4; j++) {
+            for (int k = 0; k < 4; k++) {
+                q.emplace(0, make_pair(berths[i].x + j, berths[i].y + k));
+                berth_dis[berths[i].x + j][berths[i].y + k][i] = 0;
+            }
+        }
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || berth_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //标记已经访问
+                berth_dis[nextx][nexty][i] = nowg + 1;
+                //加入优先队列
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
+    int sum = 0, f = 0;
+    bool vis[n][n];
+    memset(vis, false, sizeof(vis));
+    for (auto &s: game_map) {
+        for (char c: s) {
+            if (c == '#' || c == '*')continue;
+            sum++;
+        }
+    }
+    sum = sum / random_bfs_point;
+    for (int ii = 0; ii < n; ii++) {
+        if (random_point.size() >= random_bfs_point)break;
+        for (int jj = 0; jj < n; jj++) {
+            if (random_point.size() >= random_bfs_point)break;
+            if (game_map[ii][jj] == '#' || game_map[ii][jj] == '*' || vis[ii][jj])continue;
+            queue<pair<int, int>> q;
+            q.emplace(ii, jj);
+            vis[ii][jj] = true;
+            while (!q.empty()) {
+                int nowx = q.front().first;
+                int nowy = q.front().second;
+                q.pop();
+                f++;
+                if (f == sum) {
+                    f = 0;
+                    random_point.emplace_back(nowx, nowy);
+                }
+                for (int j = 0; j < 4; j++) {
+                    int nextx = nowx + dir[j][0];
+                    int nexty = nowy + dir[j][1];
+                    if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || vis[nextx][nexty] ||
+                        game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                        continue;
+                    //标记已经访问
+                    vis[nextx][nexty] = true;
+                    //加入优先队列
+                    q.emplace(nextx, nexty);
+                }
+            }
+        }
+    }
+    int size = random_point.size();
+    log("初始化随机点的个数:" + to_string(random_point.size()));
+    memset(random_dis, -1, sizeof(random_dis));
+    for (int i = 0; i < size; i++) {
+        pair<int, int> st = random_point[i];
+        queue<pair<int, pair<int, int>>> q;
+        q.emplace(0, make_pair(st.first, st.second));
+        random_dis[st.first][st.second][i] = 0;
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || random_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //标记已经访问
+                random_dis[nextx][nexty][i] = nowg + 1;
+                //加入优先队列
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
     printf("OK\n");
     fflush(stdout);
 }
 
-//货物到泊位的距离
-int CargotoBerth(Cargo &c) {
-    int min_time = 0x3f3f3f3f;
+//机器人到泊位的距离
+int RobottoBerth(Robot &r) {
+    int min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
-        int time = abs(c.x - berths[i].x) + abs(c.y - berths[i].y) + berths[i].transport_time;
+        if (berth_dis[r.x][r.y][i] == -1)continue;
+        int time = berth_dis[r.x][r.y][i] + berths[i].transport_time_value();
+        if (time < min_time) {
+            min_time = time;
+            min_id = i;
+        }
+    }
+    return min_id;
+}
+
+//货物到泊位的距离
+int CargotoBerth(Cargo &c) {
+    int min_time = MAXNUM;
+    int min_id = -1;
+    for (int i = 0; i < berth_num; i++) {
+        if (berth_dis[c.x][c.y][i] == -1)continue;
+        int time = berth_dis[c.x][c.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;
             min_id = i;
@@ -337,7 +482,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
             //估价函数
             int nextg = nowg + 1;
             //曼哈顿距离
-            int h = abs(nextx - x1) + abs(nexty - y1);
+            int h = berth_dis[nextx][nexty][berthid];
             //加入优先队列
             q.emplace(-(nextg + h), make_pair(nextg, make_pair(nextx, nexty)));
         }
@@ -383,26 +528,35 @@ queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) 
     return Astar(x, y, x1, y1, berthid);
 }
 
-//货物到机器人的距离,曼哈顿距离
+//货物到机器人的距离
 int CargotoRobot(Cargo &c, Robot &r) {
-    return abs(c.x - r.x) + abs(c.y - r.y);
+    int min = MAXNUM;
+    int size = random_point.size();
+    for (int i = 0; i < size; i++) {
+        if (random_dis[c.x][c.y][i] == -1)continue;
+        if (random_dis[r.x][r.y][i] == -1)continue;
+        int z = random_dis[c.x][c.y][i] + random_dis[r.x][r.y][i];
+        if (z < min) {
+            min = z;
+        }
+    }
+    return min;
 }
 
 //获取一个新的物品
 void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
-    int goal_id, goal_time;
+    int goal_id;
+    double goal_time;
     Cargo goal = default_cargo;
     for (int i = 0; i < cargos.size(); i++) {
         Cargo cargo = cars.front();
         cars.pop();
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        //log("距离最近的泊位:" + to_string(berth_id));
-        int berth_time =
-                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) +
-                berths[berth_id].transport_time;
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         int robot_time = CargotoRobot(cargo, robots[i]);
+        if (robot_time == MAXNUM)continue;
         double value = cargo.val * 1.0 / (berth_time + robot_time);
         if (value > max_value) {
             max_value = value;
@@ -414,14 +568,20 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     if (max_value <= 0)return;
     queue<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
     if (road.empty())return;
-    r.cargo = goal;
-    r.cargotoberth = goal_time;
-    r.berthid = goal_id;
-    r.road = road;
+    //删除被拿走的物品
+    queue<Cargo> c;
+    while (!cargos.empty()) {
+        Cargo ca = cargos.front();
+        cargos.pop();
+        if (ca.val == goal.val && ca.x == goal.x && ca.y == goal.y && ca.time == goal.time) continue;
+        c.push(ca);
+    }
+    cargos = c;
+    r.setGoal(goal, goal_time, goal_id, road);
 }
 
 //每帧的输入
-int PerframeInput() {
+void PerframeInput() {
     scanf("%d%d", &id, &money);
     log("第" + to_string(id) + "帧");
     int num;
@@ -438,12 +598,10 @@ int PerframeInput() {
         scanf("%d%d\n", &boats[i].status, &boats[i].berthid);
     char okk[100];
     scanf("%s", okk);
-    return id;
 }
 
 //每帧的更新
 void PerframeUpdate() {
-    //log("第" + to_string(id) + "帧更新");
     queue<Cargo> c;
     //当大于1000帧的时候物品消失
     for (int i = 0; i < cargos.size(); i++) {
@@ -460,42 +618,41 @@ void PerframeUpdate() {
             break;
         }
     }
-    //log(have_robot ? "有机器人空闲" : "所有机器人都在运货");
     while (have_robot && !new_cargos.empty()) {
         Cargo cargo = new_cargos.front();
         new_cargos.pop_front();
-        //log("货物:\nx:" + to_string(cargo.x) + "\ny:" + to_string(cargo.y) + "\n价值:" + to_string(cargo.val));
         int berth_id = CargotoBerth(cargo);
         if (berth_id == -1)continue;
-        //log("距离最近的泊位:" + to_string(berth_id));
-        int berth_time =
-                abs(berths[berth_id].x - cargo.x) + abs(berths[berth_id].y - cargo.y) + berths[berth_id].transport_time;
+        double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         double max_value = 0.0;
         int robot_id = -1;
         //找到最优的机器人
         for (int i = 0; i < robot_num; i++) {
             //如果机器人携带货物就跳过
             if (robots[i].goods == 1)continue;
+            //如果机器人到不了对应的泊位
+            if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
+            if (robot_time == MAXNUM)continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
-                    robots[i].cargo.val * 1.0 / max(1, (int) robots[i].road.size() + robots[i].cargotoberth);
+                    robots[i].cargo.val * 1.0 /
+                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+//            double robot_value =
+//                    robots[i].cargo.val * 1.0 /
+//                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)continue;
-            if (value > max_value) {
-                max_value = value;
+            if (value - robot_value > max_value) {
+                max_value = value - robot_value;
                 robot_id = i;
             }
         }
-        //log("最优的机器人:" + to_string(robot_id));
         //如果没有找到机器人就把货物重新放入队列
         if (robot_id == -1) {
             cargos.push(cargo);
             continue;
         }
         queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
-        //log("路径长度:" + to_string(road.size()));
-        //log("机器人坐标:\nx:" + to_string(robots[robot_id].x) + "\ny:" + to_string(robots[robot_id].y));
-        //log("路径第一个坐标:\nx:" + to_string(road.front().first) + "\ny:" + to_string(road.front().second));
         //如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
             cargos.push(cargo);
@@ -505,28 +662,34 @@ void PerframeUpdate() {
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);
         }
-        robots[robot_id].cargo = cargo;
-        robots[robot_id].cargotoberth = berth_time;
-        robots[robot_id].berthid = berth_id;
-        robots[robot_id].road = road;
+        robots[robot_id].setGoal(cargo, berth_time, berth_id, road);
         break;
     }
-    //没有任务目标的机器人获得新的任务目标
+    //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
-        if (robots[i].cargo.val == 0) {
+        if (robots[i].goods == 1 &&
+            robots[i].road.empty()) {
+            int berth_id = RobottoBerth(robots[i]);
+            robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
+                                            berths[berth_id].y, berth_id);
+        }
+        if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
             RobotFindNewGoal(cargos, robots[i]);
+        }
+        if (robots[i].cargo.val != 0 && (robots[i].road.size() + id - robots[i].cargo.time > 1000)) {
+            robots[i].Reset(false);
         }
     }
 }
 
 //每帧的输出
 void PerframeOutput() {
-    //log("第" + to_string(id) + "帧输出");
-    for (int i = 0; i < berth_num; i++) {
-        if (berths[i].things.empty())continue;
-        log("第" + to_string(i) + "号泊位");
-        log("物品数量:" + to_string(berths[i].things.size()));
-    }
+//    log("第" + to_string(id) + "帧输出");
+//    for (int i = 0; i < berth_num; i++) {
+//        if (berths[i].things.empty())continue;
+//        log("第" + to_string(i) + "号泊位");
+//        log("物品数量:" + to_string(berths[i].things.size()));
+//    }
     for (int i = 0; i < robot_num; i++) {
         //如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
@@ -534,7 +697,7 @@ void PerframeOutput() {
             robots[i].road.pop();
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
-                robots[i].Reset();
+                robots[i].Reset(false);
             } else {
                 //机器人移动
                 robots[i].move(next.first, next.second);
@@ -548,6 +711,8 @@ void PerframeOutput() {
                     robots[i].putThings(next.first, next.second);
                 }
             }
+        } else if (robots[i].goods == 1) {//机器人正好在港口上的时候
+            robots[i].putThings(robots[i].x, robots[i].y);
         }
     }
     for (int i = 0; i < boat_num; i++) {
@@ -560,6 +725,7 @@ void PerframeOutput() {
         } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
+                if (berths[j].boatid != -1)continue;
                 int z = berths[j].things.size();
                 if (z > max) {
                     max = z;
@@ -581,6 +747,8 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
+                if (berths[j].boatid != -1)continue;
+                if (id + 500 + berths[j].transport_time > 14950)continue;
                 int z = berths[j].things.size();
                 if (z > max) {
                     max = z;
@@ -604,11 +772,34 @@ void log(string s) {
 #endif
 }
 
+#ifdef _WIN32
+
+//创建一张地图
+void CreateMap() {
+    char map[n][n];
+    memset(map, '.', sizeof(map));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == n - 2) {
+                outfile << '#';
+            } else if (i < 4 && j % 5 != 0 && j <= 50) {
+                outfile << 'B';
+            } else {
+                outfile << map[i][j];
+            }
+        }
+        outfile << endl;
+    }
+}
+
+#endif
+
 //主函数
 int main() {
 #ifdef _WIN32
     // 以写模式打开文件
     outfile.open("log.txt", ios::out | ios::trunc);
+    //CreateMap();
 #endif
     Init();
     for (int zhen = 1; zhen <= 15000; zhen++) {

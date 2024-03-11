@@ -38,7 +38,7 @@ class Cargo;
 
 void log(string s);
 
-queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
+vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
 
 void RobotFindNewGoal(queue<Cargo> cars, Robot &r);
 
@@ -70,7 +70,11 @@ class Berth berths[berth_num];
 #include "./include/Boat_imp.hpp"
 #include "./include/Berth_imp.hpp"
 #include "./include/AStarEpsilon.hpp"
+#include "./include/CoverToVector.hpp"
 
+using Robotlib::AStarEpsilon;
+using Robotlib::State;
+AStarEpsilon *starEpsilon;
 // 初始化
 void Init() {
     for (int i = 0; i < n; i++)
@@ -199,6 +203,7 @@ void Init() {
             }
         }
     }
+    starEpsilon= new AStarEpsilon(convertToVector(n,game_map), 1.5);
     printf("OK\n");
     fflush(stdout);
 }
@@ -236,8 +241,8 @@ int CargotoBerth(Cargo &c) {
 }
 
 // A*算法
-queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
-    queue<pair<int, int>> road;
+vector<pair<int, int>> Astar(int x, int y, int x1, int y1) {
+    vector<pair<int, int>> road;
     int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
@@ -280,7 +285,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
     int nowx = x1, nowy = y1;
     // 获取路径
     while (nowx != x || nowy != y) {
-        road.emplace(nowx, nowy);
+        road.emplace_back(nowx, nowy);
         for (int i = 0; i < 4; i++) {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
@@ -295,20 +300,12 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1) {
         }
     }
     // 翻转路径
-    stack<pair<int, int>> road1;
-    while (!road.empty()) {
-        road1.push(road.front());
-        road.pop();
-    }
-    while (!road1.empty()) {
-        road.push(road1.top());
-        road1.pop();
-    }
+    reverse(road.begin(), road.end());
     return road;
 }
 
-queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
-    queue<pair<int, int>> road;
+vector<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
+    vector<pair<int, int>> road;
     int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
@@ -354,7 +351,7 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
     int nowx = fx, nowy = fy;
     // 获取路径
     while (nowx != x || nowy != y) {
-        road.emplace(nowx, nowy);
+        road.emplace_back(nowx, nowy);
         for (int i = 0; i < 4; i++) {
             int nextx = nowx + dir[i][0];
             int nexty = nowy + dir[i][1];
@@ -369,27 +366,23 @@ queue<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
         }
     }
     // 翻转路径
-    stack<pair<int, int>> road1;
-    while (!road.empty()) {
-        road1.push(road.front());
-        road.pop();
-    }
-    while (!road1.empty()) {
-        road.push(road1.top());
-        road1.pop();
-    }
+    reverse(road.begin(), road.end());
     return road;
 }
 
 //获取到物品的路径
-queue<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
-    log("计算机器人到物品的路径");
+vector<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
+    //log("计算机器人到物品的路径");
     return Astar(x, y, x1, y1);
+//    vector<pair<int, int>> path;
+//    unordered_set<State> obstacles;
+//    starEpsilon->Search(path,id,make_pair(x, y), make_pair(x1, y1), obstacles);
+//    return path;
 }
 
 //获取到泊位的路径
-queue<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
-    log("计算机器人到港口的路径");
+vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
+    //log("计算机器人到港口的路径");
     return Astar(x, y, x1, y1, berthid);
 }
 
@@ -436,7 +429,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     }
     if (max_value <= 0)
         return;
-    queue<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
+    vector<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
     if (road.empty())
         return;
     // 删除被拿走的物品
@@ -530,7 +523,7 @@ void PerframeUpdate() {
             cargos.push(cargo);
             continue;
         }
-        queue<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
+        vector<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
         // 如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
             cargos.push(cargo);
@@ -573,7 +566,7 @@ void PerframeOutput() {
         // 如果机器人路径不为空就继续走
         if (!robots[i].road.empty()) {
             pair<int, int> next = robots[i].road.front();
-            robots[i].road.pop();
+            robots[i].road.erase(robots[i].road.begin());
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
                 robots[i].Reset(false);

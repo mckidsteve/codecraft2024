@@ -114,7 +114,7 @@ namespace Robotlib {
             std::unordered_set<Node *> finished_set;//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
             Node *start_node = new Node(State(start, time), 0,
-                                        heuristicToCargo(State(start, time), goal_state),
+                                        heuristicToBerth(State(start, time), goal_state, berthid),
                                         nullptr);
             open_set.push(start_node);
             focal_set.push(start_node);
@@ -134,7 +134,7 @@ namespace Robotlib {
                 }
                 Node *node = focal_set.top();
                 //判断是否为目标状态
-                if (node->isGoalToCargo(goal)) {
+                if (node->isGoalToBerth(goal)) {
                     flag = true;
                     break;
                 }
@@ -153,7 +153,7 @@ namespace Robotlib {
                     }
                     State next_state(nextx, nexty, nexttime);
                     double g = node->g + 1;
-                    double h = heuristicToCargo(next_state, goal_state);
+                    double h = heuristicToBerth(next_state, goal_state, berthid);
                     Node *next_node = new Node(next_state, g, h, node);
                     if (close_set.count(next_state) == 0) {
                         finished_set.insert(next_node);
@@ -208,8 +208,8 @@ namespace Robotlib {
 
             //判断是否为目标状态
             bool isGoalToBerth(const pair<int, int> &goal) const {
-                return (goal.first - state.x < 4 && goal.first - state.x >= 0) &&
-                       (goal.second - state.y < 4 && goal.second - state.y >= 0);
+                return (state.x - goal.first < 4 && state.x - goal.first >= 0) &&
+                       (state.y - goal.second < 4 && state.y - goal.second >= 0);
             }
 
             //重载<运算符，用于优先队列，f值小的优先级高

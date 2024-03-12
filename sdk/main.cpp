@@ -370,11 +370,11 @@ vector<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
 //获取到物品的路径
 vector<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
     //return Astar(x, y, x1, y1);
-    vector<pair<int, int>> path = Astar(x, y, x1, y1);
-//    vector<pair<int, int>> path;
-//    unordered_set<State> obstacles;
+//    vector<pair<int, int>> path = Astar(x, y, x1, y1);
+    vector<pair<int, int>> path;
+    unordered_set<State> obstacles;
     log("计算机器人到物品的路径");
-//    starEpsilon->Search(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
+    starEpsilon->Search(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
     log("path的长度:" + to_string(path.size()));
     return path;
 }

@@ -25,7 +25,7 @@ namespace Robotlib {
                std::unordered_set<State> &obstacles) {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
-            std::priority_queue<Node *, vector<Node *>, CompareNode> focal_set;//焦点集合
+            std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合
             std::unordered_set<State> close_set;//关闭集合
             std::unordered_set<Node *> finished_set;//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
@@ -55,7 +55,8 @@ namespace Robotlib {
                     break;
                 }
                 focal_set.pop();
-                open_set.remove(node);
+                //open_set.remove(node);
+                node->use = true;
                 int z = directions_.size();
                 for (int i = 0; i < z; i++) {
                     int nextx = node->state.x + directions_[i].first;
@@ -80,6 +81,7 @@ namespace Robotlib {
                         delete next_node;
                     }
                 }
+                while (!open_set.empty() && open_set.top()->use)open_set.pop();
             }
             if (!flag) {
                 return false;
@@ -109,6 +111,7 @@ namespace Robotlib {
             double g;//g值
             double h;//h值
             double f;//f值, f = g + h
+            bool use;//是否使用
             Node *parent;//父节点
             //构造函数
             Node(State state, double g, double h, Node *p) : state(state), g(g), h(h), f(g + h), parent(p) {}
@@ -145,7 +148,7 @@ namespace Robotlib {
 
         //启发函数
         int heuristic(const State &a, const State &b) {
-            return abs(a.x - b.x) + abs(a.y - b.y) + a.time * 0.1;
+            return abs(a.x - b.x) + abs(a.y - b.y);
         }
 
         //状态

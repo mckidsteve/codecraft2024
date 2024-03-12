@@ -1,5 +1,6 @@
 // #pragma once
 #include <bits/stdc++.h>
+#include ".\include\log.hpp"
 
 using namespace std;
 
@@ -18,9 +19,6 @@ int random_dis[n][n][random_bfs_point + 50];
 // 所有随机点的坐标
 vector<pair<int, int>> random_point;
 
-#ifdef _WIN32
-ofstream outfile; // 日志文件
-#endif
 
 int id;
 /**
@@ -35,8 +33,6 @@ char game_map[n][n];
 class Robot;
 
 class Cargo;
-
-void log(string s);
 
 vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
 
@@ -75,6 +71,7 @@ class Berth berths[berth_num];
 using Robotlib::AStarEpsilon;
 using Robotlib::State;
 AStarEpsilon *starEpsilon;
+
 // 初始化
 void Init() {
     for (int i = 0; i < n; i++)
@@ -203,7 +200,7 @@ void Init() {
             }
         }
     }
-    starEpsilon= new AStarEpsilon(convertToVector(n,game_map), 1.5);
+    starEpsilon = new AStarEpsilon(convertToVector(n, game_map), 1.5);
     printf("OK\n");
     fflush(stdout);
 }
@@ -372,12 +369,14 @@ vector<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
 
 //获取到物品的路径
 vector<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
-    //log("计算机器人到物品的路径");
-    return Astar(x, y, x1, y1);
+    //return Astar(x, y, x1, y1);
+    vector<pair<int, int>> path = Astar(x, y, x1, y1);
 //    vector<pair<int, int>> path;
 //    unordered_set<State> obstacles;
-//    starEpsilon->Search(path,id,make_pair(x, y), make_pair(x1, y1), obstacles);
-//    return path;
+    log("计算机器人到物品的路径");
+//    starEpsilon->Search(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
+    log("path的长度:" + to_string(path.size()));
+    return path;
 }
 
 //获取到泊位的路径
@@ -641,50 +640,15 @@ void PerframeOutput() {
     fflush(stdout);
 }
 
-// 日志信息
-void log(string s) {
-#ifdef _WIN32
-    outfile << s << endl;
-#endif
-}
-
-#ifdef _WIN32
-
-// 创建一张地图
-void CreateMap() {
-    char map[n][n];
-    memset(map, '.', sizeof(map));
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i == n - 2) {
-                outfile << '#';
-            } else if (i < 4 && j % 5 != 0 && j <= 50) {
-                outfile << 'B';
-            } else {
-                outfile << map[i][j];
-            }
-        }
-        outfile << endl;
-    }
-}
-
-#endif
-
 // 主函数
 int main() {
-#ifdef _WIN32
-    // 以写模式打开文件
-    outfile.open("log.txt", ios::out | ios::trunc);
-    // CreateMap();
-#endif
     Init();
+    LogInit();
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();
         PerframeOutput();
     }
-#ifdef _WIN32
-    outfile.close();
-#endif
+    LogClose();
     return 0;
 }

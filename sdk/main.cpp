@@ -12,15 +12,6 @@ const int berth_num = 10;
 const int random_bfs_point = 100;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限
-// 到对应泊位的距离
-int berth_dis[n][n][berth_num];
-// 到随机点的距离
-int random_dis[n][n][random_bfs_point + 50];
-// 所有随机点的坐标
-vector<pair<int, int>> random_point;
-
-
-int id;
 /**
  * 地图
  * .空地
@@ -28,7 +19,16 @@ int id;
  * #障碍
  * 0-9泊位所在的位置
  * */
-char game_map[n][n];
+vector<vector<char>> game_map(n, vector<char>(n, '#'));
+// 到对应泊位的距离
+vector<vector<vector<int>>> berth_dis(n, vector<vector<int>>(n, vector<int>(berth_num, -1)));
+// 到随机点的距离
+vector<vector<vector<int>>> random_dis(n, vector<vector<int>>(n, vector<int>(random_bfs_point + 50, -1)));
+// 所有随机点的坐标
+vector<pair<int, int>> random_point;
+
+
+int id;
 
 class Robot;
 
@@ -74,8 +74,13 @@ AStarEpsilon *starEpsilon;
 
 // 初始化
 void Init() {
-    for (int i = 0; i < n; i++)
-        scanf("%s", game_map[i]);
+    for (int i = 0; i < n; i++) {
+        char s[n];
+        scanf("%s", s);
+        for (int j = 0; j < n; j++) {
+            game_map[i][j] = s[j];
+        }
+    }
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (game_map[i][j] == 'A')game_map[i][j] = '.';
@@ -102,7 +107,6 @@ void Init() {
     char okk[100];
     scanf("%s", okk);
     //初始化所有泊位到所有位置的距离
-    memset(berth_dis, -1, sizeof(berth_dis));
     int dir[4][2] = {{0,  1},
                      {0,  -1},
                      {1,  0},
@@ -176,7 +180,6 @@ void Init() {
     }
     int size = random_point.size();
     log("初始化随机点的个数:" + to_string(random_point.size()));
-    memset(random_dis, -1, sizeof(random_dis));
     for (int i = 0; i < size; i++) {
         pair<int, int> st = random_point[i];
         queue<pair<int, pair<int, int>>> q;
@@ -200,7 +203,7 @@ void Init() {
             }
         }
     }
-    starEpsilon = new AStarEpsilon(convertToVector(n, game_map), 1.5);
+    starEpsilon = new AStarEpsilon(game_map, 1.5, berth_dis);
     printf("OK\n");
     fflush(stdout);
 }
@@ -369,20 +372,20 @@ vector<pair<int, int>> Astar(int x, int y, int x1, int y1, int berthid) {
 
 //获取到物品的路径
 vector<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
-    //return Astar(x, y, x1, y1);
-//    vector<pair<int, int>> path = Astar(x, y, x1, y1);
     vector<pair<int, int>> path;
     unordered_set<State> obstacles;
-    log("计算机器人到物品的路径");
-    starEpsilon->Search(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
-    log("path的长度:" + to_string(path.size()));
+    starEpsilon->SearchToCargo(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
+    //log("path的长度:" + to_string(path.size()));
     return path;
 }
 
 //获取到泊位的路径
 vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
-    //log("计算机器人到港口的路径");
-    return Astar(x, y, x1, y1, berthid);
+    vector<pair<int, int>> path;
+    unordered_set<State> obstacles;
+    starEpsilon->SearchToBerth(path, id, make_pair(x, y), make_pair(x1, y1), obstacles, berthid);
+//    return Astar(x, y, x1, y1, berthid);
+    return path;
 }
 
 // 货物到机器人的距离
@@ -572,14 +575,14 @@ void PerframeOutput() {
             } else {
                 // 机器人移动
                 robots[i].move(next.first, next.second);
-            }
-            if (robots[i].road.empty()) {
-                if (robots[i].goods == 0) {
-                    // 机器人没有货物,就去拿货物
-                    robots[i].getThings(next.first, next.second);
-                } else {
-                    // 机器人有货物,就去放货物
-                    robots[i].putThings(next.first, next.second);
+                if (robots[i].road.empty()) {
+                    if (robots[i].goods == 0) {
+                        // 机器人没有货物,就去拿货物
+                        robots[i].getThings(next.first, next.second);
+                    } else {
+                        // 机器人有货物,就去放货物
+                        robots[i].putThings(next.first, next.second);
+                    }
                 }
             }
         } else if (robots[i].goods == 1) { // 机器人正好在港口上的时候
@@ -642,8 +645,8 @@ void PerframeOutput() {
 
 // 主函数
 int main() {
-    Init();
     LogInit();
+    Init();
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();

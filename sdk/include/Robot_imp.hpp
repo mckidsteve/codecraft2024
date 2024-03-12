@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ROBOT.hpp"
+
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
     road = getRoadtoBerth(x, y, berths[berthid].x,

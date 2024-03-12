@@ -1,3 +1,5 @@
+#pragma once
+
 vector<pair<int, int>> Astar(int x, int y, int x1, int y1) {
     vector<pair<int, int>> road;
     int dir[4][2] = {{0,  1},

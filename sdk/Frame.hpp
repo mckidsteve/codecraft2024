@@ -1,3 +1,5 @@
+#pragma once
+
 // 每帧的输入
 void PerframeInput() {
     scanf("%d%d", &id, &money);

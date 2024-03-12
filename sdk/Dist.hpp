@@ -1,3 +1,5 @@
+#pragma once
+
 // 机器人到泊位的距离
 int RobottoBerth(Robot &r) {
     int min_time = MAXNUM;

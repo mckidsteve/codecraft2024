@@ -1,3 +1,5 @@
+#pragma once
+
 void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
     int goal_id;

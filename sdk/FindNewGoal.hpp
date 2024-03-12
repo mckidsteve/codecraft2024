@@ -9,7 +9,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         Cargo cargo = cars.front();
         cars.pop();
         int berth_id = CargotoBerth(cargo);
-        if (berth_id == -1)
+        if (berth_id == -1 || berth_dis[r.x][r.y][berth_id] == -1)
             continue;
         double berth_time = berth_dis[cargo.x][cargo.y][berth_id] + berths[berth_id].transport_time_value();
         int robot_time = CargotoRobot(cargo, robots[i]);
@@ -25,6 +25,8 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     }
     if (max_value <= 0)
         return;
+    log("重新获取货物:" + to_string(r.id));
+    log("新物品的val:" + to_string(goal.val));
     vector<pair<int, int>> road = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
     if (road.empty())
         return;

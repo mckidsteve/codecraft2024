@@ -35,19 +35,25 @@ int CargotoBerth(Cargo &c) {
 
 //获取到物品的路径
 vector<pair<int, int>> getRoadtoCargo(int x, int y, int x1, int y1) {
+    log("获取到物品的路径");
+    log("从x:" + to_string(x) + " y:" + to_string(y) + "到x1:" + to_string(x1) + " y1:" + to_string(y1));
     vector<pair<int, int>> path;
     unordered_set<State> obstacles;
     starEpsilon->SearchToCargo(path, id, make_pair(x, y), make_pair(x1, y1), obstacles);
-    //log("path的长度:" + to_string(path.size()));
+    log("路径长度:" + to_string(path.size()));
+    log("获取到物品的路径成功");
     return path;
 }
 
 //获取到泊位的路径
 vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid) {
+//    log("获取到泊位的路径");
+//    log("从x:" + to_string(x) + " y:" + to_string(y) + "到x1:" + to_string(x1) + " y1:" + to_string(y1));
     vector<pair<int, int>> path;
     unordered_set<State> obstacles;
     starEpsilon->SearchToBerth(path, id, make_pair(x, y), make_pair(x1, y1), obstacles, berthid);
-//    return Astar(x, y, x1, y1, berthid);
+//    log("路径长度:" + to_string(path.size()));
+//    log("获取到泊位的路径成功");
     return path;
 }
 

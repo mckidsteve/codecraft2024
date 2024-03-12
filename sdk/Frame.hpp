@@ -63,9 +63,6 @@ void PerframeUpdate() {
             double robot_value =
                     robots[i].cargo.val * 1.0 /
                     max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
-            //            double robot_value =
-            //                    robots[i].cargo.val * 1.0 /
-            //                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)
                 continue;
             if (value - robot_value > max_value) {
@@ -78,6 +75,8 @@ void PerframeUpdate() {
             cargos.push(cargo);
             continue;
         }
+//        log("分配货物:" + to_string(robot_id));
+//        log("新物品的val:" + to_string(cargo.val));
         vector<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
         // 如果没有找到路径就把货物重新放入队列
         if (road.empty()) {

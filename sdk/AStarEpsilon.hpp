@@ -40,7 +40,15 @@ namespace Robotlib {
             close_set.insert(start_node->state);
             double min_f = start_node->f;
             bool flag = false;
+//            int num = 0;
+//            log("开始搜索");
+//            log("start.x:" + to_string(start.first) + " start.y:" + to_string(start.second));
+//            log("goal.x:" + to_string(goal.first) + " goal.y:" + to_string(goal.second));
             while (!open_set.empty()) {
+//                log("第" + to_string(num++) + "次搜索");
+//                log("open_set.size():" + to_string(open_set.size()));
+//                log("focal_set.size():" + to_string(focal_set.size()));
+//                log("close_set.size():" + to_string(close_set.size()));
                 double old_min_f = min_f;
                 min_f = open_set.top()->f;
                 if (min_f > old_min_f) {
@@ -51,6 +59,8 @@ namespace Robotlib {
                     }
                 }
                 Node *node = focal_set.top();
+//                log("当前节点x:" + to_string(node->state.x) + " y:" + to_string(node->state.y) + " time:" +
+//                    to_string(node->state.time));
                 //判断是否为目标状态
                 if (node->isGoalToCargo(goal)) {
                     flag = true;
@@ -83,6 +93,14 @@ namespace Robotlib {
                         delete next_node;
                     }
                 }
+                //遍历open_set
+//                int zz = 0;
+//                for (auto it = open_set.begin(); it != open_set.end(); ++it) {
+//                    Node *node = *it;
+//                    log("open_set" + to_string(zz) + ".x:" + to_string(node->state.x) + " y:" +
+//                        to_string(node->state.y) + " time:" +
+//                        to_string(node->state.time) + "use:" + to_string(node->use));
+//                }
                 while (!open_set.empty() && open_set.top()->use)open_set.pop();
             }
             if (!flag) {
@@ -196,7 +214,7 @@ namespace Robotlib {
             double g;//g值
             double h;//h值
             double f;//f值, f = g + h
-            bool use;//是否使用
+            bool use{};//是否使用
             Node *parent;//父节点
             //构造函数
             Node(State state, double g, double h, Node *p) : state(state), g(g), h(h), f(g + h), parent(p) {}

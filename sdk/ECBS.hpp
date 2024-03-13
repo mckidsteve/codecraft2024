@@ -257,7 +257,7 @@ namespace Robotlib {
         //焦点比较函数
         struct AllPathsCompareNode {
             bool operator()(const AllPaths *lhs, const AllPaths *rhs) const {
-                return lhs->cost > rhs->cost;
+                return lhs->clashs.size() > rhs->clashs.size();
             }
         };
     };

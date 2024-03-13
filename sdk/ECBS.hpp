@@ -15,9 +15,6 @@ namespace Robotlib {
         //机器人需要有自己的目标cargo或者Berth
         void Search(int robot_id, int end_x, int end_y, int time, int berth_id) {
             //路径不为空就不进行搜索
-            log("机器人id" + to_string(robot_id) + " end_x:" + to_string(end_x)
-                + " end_y:" + to_string(end_y) + " time:" + to_string(time)
-                + " berth_id:" + to_string(berth_id));
             if (!robots[robot_id]->path.road.empty())return;
             AllPaths *all_paths = new AllPaths(time);
             for (int i = 0; i < robot_num; i++) {
@@ -39,9 +36,7 @@ namespace Robotlib {
             bool flag = false;
             AllPaths *goal;
             int num = 0;
-            log("开始高纬度A*");
             while (!open_set.empty()) {
-                log("循环次数:" + to_string(num++));
                 double old_min_f = min_f;
                 min_f = open_set.top()->min_f;
                 if (min_f > old_min_f) {
@@ -52,6 +47,11 @@ namespace Robotlib {
                     }
                 }
                 AllPaths *node = focal_set.top();
+//                bool f = true;
+//                int count = 0;
+//                while (!node->clashs.empty() && f) {
+//                    count = 1;
+//                }
                 //判断是否为目标状态
                 if (node->clashs.empty()) {
                     flag = true;
@@ -59,7 +59,6 @@ namespace Robotlib {
                     break;
                 }
                 focal_set.pop();
-                node->use = true;
                 int z = node->clashs.size();
                 int next_robot_id;
                 int next_end_x, next_end_y;
@@ -93,9 +92,9 @@ namespace Robotlib {
                         starEpsilon.SearchToBerth(next_path_1, time,
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
-                                                  all_paths->getRobotofConstraint(next_robot_id),
+                                                  next_node_1->getRobotofConstraint(next_robot_id),
                                                   next_berth_id);
-                        all_paths->ChangePath(next_robot_id, next_path_1);
+                        next_node_1->ChangePath(next_robot_id, next_path_1);
                         finished_set.insert(next_node_1);
                         open_set.push(next_node_1);
                         if (next_node_1->cost <= min_f * w)
@@ -132,9 +131,9 @@ namespace Robotlib {
                         starEpsilon.SearchToBerth(next_path_2, time,
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
-                                                  all_paths->getRobotofConstraint(next_robot_id),
+                                                  next_node_2->getRobotofConstraint(next_robot_id),
                                                   next_berth_id);
-                        all_paths->ChangePath(next_robot_id, next_path_2);
+                        next_node_2->ChangePath(next_robot_id, next_path_2);
                         finished_set.insert(next_node_2);
                         open_set.push(next_node_2);
                         if (next_node_2->cost <= min_f * w)
@@ -171,9 +170,9 @@ namespace Robotlib {
                         starEpsilon.SearchToBerth(next_path_1, time,
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
-                                                  all_paths->getRobotofConstraint(next_robot_id),
+                                                  next_node_1->getRobotofConstraint(next_robot_id),
                                                   next_berth_id);
-                        all_paths->ChangePath(next_robot_id, next_path_1);
+                        next_node_1->ChangePath(next_robot_id, next_path_1);
                         finished_set.insert(next_node_1);
                         open_set.push(next_node_1);
                         if (next_node_1->cost <= min_f * w)
@@ -210,9 +209,9 @@ namespace Robotlib {
                         starEpsilon.SearchToBerth(next_path_2, time,
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
-                                                  all_paths->getRobotofConstraint(next_robot_id),
+                                                  next_node_2->getRobotofConstraint(next_robot_id),
                                                   next_berth_id);
-                        all_paths->ChangePath(next_robot_id, next_path_2);
+                        next_node_2->ChangePath(next_robot_id, next_path_2);
                         finished_set.insert(next_node_2);
                         open_set.push(next_node_2);
                         if (next_node_2->cost <= min_f * w)
@@ -224,6 +223,7 @@ namespace Robotlib {
                         }
                     }
                 }
+                node->use = true;
                 while (!open_set.empty() && open_set.top()->use)open_set.pop();
             }
             if (!flag) {

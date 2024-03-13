@@ -7,13 +7,13 @@
 
 namespace Robotlib {
     struct AllPaths {
-        std::vector<std::pair<int, int>> RobotPos;//机器人坐标
-        std::vector<Path> roads;//所有路径
-        std::vector<ConstraintRobot> constraints;//目前对机器人的限制
-        std::vector<ClashRobot> clashs;//目前的冲突情况
+        std::vector<std::pair<int, int>> RobotPos{};//机器人坐标
+        std::vector<Path> roads{};//所有路径
+        std::vector<ConstraintRobot> constraints{};//目前对机器人的限制
+        std::vector<ClashRobot> clashs{};//目前的冲突情况
         double cost{};//路径总花费
         double min_f{};//min_f总价
-        int time;
+        int time{};
         bool use{};
 
         explicit AllPaths(int time) : time(time) {};

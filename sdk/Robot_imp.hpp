@@ -1,10 +1,11 @@
 #pragma once
 
 #include "ROBOT.hpp"
+#include "Dist.hpp"
 
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
-    road = getRoadtoBerth(x, y, berths[berthid].x,
+    path = getRoadtoBerth(x, y, berths[berthid].x,
                           berths[berthid].y, berthid);
 }
 
@@ -13,7 +14,6 @@ void Robot::putThings(int x, int y) {
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)
         return;
-    // log("第" + to_string(id) + "号机器人向第" + to_string(num) + "号泊位放置货物");
     int pos_x = x - berths[num].x;
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
@@ -33,7 +33,7 @@ void Robot::move(int x, int y) {
 }
 
 void Robot::Reset(bool complete) {
-    road.clear();
+    path.clear();
     cargotoberth = 0;
     berthid = -1;
     if (!complete && goods == 0)
@@ -41,7 +41,7 @@ void Robot::Reset(bool complete) {
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, double dis, int brenth_id, vector<pair<int, int>> r) {
+void Robot::setGoal(Cargo c, double dis, int brenth_id, Robotlib::Path &r) {
     //    log("机器人id:" + to_string(id));
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));
@@ -49,5 +49,5 @@ void Robot::setGoal(Cargo c, double dis, int brenth_id, vector<pair<int, int>> r
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
-    road = r;
+    path = r;
 }

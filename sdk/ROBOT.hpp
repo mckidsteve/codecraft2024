@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CARGO.hpp"
+#include "Path.hpp"
 
 class Robot {
 public:
@@ -11,7 +12,8 @@ public:
     double cargotoberth{}; // 机器人携带的货物到泊位的距离
     int berthid{-1};
     Cargo cargo{default_cargo}; // 机器人的货物
-    vector<pair<int, int>> road; // 机器人的路径
+    //vector<pair<int, int>> road;
+    Robotlib::Path path;// 机器人的路径
 
     Robot() = default;
 
@@ -27,7 +29,7 @@ public:
     void putThings(int x, int y);
 
     // 设置机器人要拿取什么物品
-    void setGoal(Cargo c, double dis, int brenth_id, vector<pair<int, int>> r);
+    void setGoal(Cargo c, double dis, int brenth_id, Robotlib::Path &r);
 
     // 机器人移动
     void move(int x, int y);

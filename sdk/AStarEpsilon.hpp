@@ -22,7 +22,7 @@ namespace Robotlib {
                 : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis) {}
 
         bool
-        SearchToCargo(std::vector<std::pair<int, int>> &path, int time, std::pair<int, int> start,
+        SearchToCargo(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
                       std::unordered_set<State> &obstacles) {
             path.clear();
@@ -109,11 +109,11 @@ namespace Robotlib {
             //回溯路径
             Node *node = focal_set.top();
             while (node->parent != nullptr) {
-                path.emplace_back(node->state.x, node->state.y);
+                path.road.emplace_back(node->state.x, node->state.y);
                 node = node->parent;
             }
             //反转路径
-            std::reverse(path.begin(), path.end());
+            std::reverse(path.road.begin(), path.road.end());
             //释放内存
             for (auto it: finished_set) {
                 delete it;
@@ -122,7 +122,7 @@ namespace Robotlib {
         }
 
         bool
-        SearchToBerth(std::vector<std::pair<int, int>> &path, int time, std::pair<int, int> start,
+        SearchToBerth(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
                       std::unordered_set<State> &obstacles, int berthid) {
             path.clear();
@@ -191,11 +191,11 @@ namespace Robotlib {
             //回溯路径
             Node *node = focal_set.top();
             while (node->parent != nullptr) {
-                path.emplace_back(node->state.x, node->state.y);
+                path.road.emplace_back(node->state.x, node->state.y);
                 node = node->parent;
             }
             //反转路径
-            std::reverse(path.begin(), path.end());
+            std::reverse(path.road.begin(), path.road.end());
             //释放内存
             for (auto it: finished_set) {
                 delete it;

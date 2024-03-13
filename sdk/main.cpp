@@ -26,16 +26,14 @@ vector<vector<vector<int>>> random_dis(n, vector<vector<int>>(n, vector<int>(ran
 // 所有随机点的坐标
 vector<pair<int, int>> random_point;
 
-
 int id;
 
-class Robot;
+#include "AStarEpsilon.hpp"
+#include "CoverToVector.hpp"
 
-class Cargo;
-
-vector<pair<int, int>> getRoadtoBerth(int x, int y, int x1, int y1, int berthid);
-
-void RobotFindNewGoal(queue<Cargo> cars, Robot &r);
+using Robotlib::AStarEpsilon;
+using Robotlib::State;
+AStarEpsilon *starEpsilon;
 
 #include "CARGO.hpp"
 
@@ -64,21 +62,12 @@ class Berth berths[berth_num];
 #include "Robot_imp.hpp"
 #include "Boat_imp.hpp"
 #include "Berth_imp.hpp"
-#include "AStarEpsilon.hpp"
-#include "CoverToVector.hpp"
-
-using Robotlib::AStarEpsilon;
-using Robotlib::State;
-AStarEpsilon *starEpsilon;
 
 // 初始化
 #include "Init.hpp"
 
 // 距离计算
 #include "Dist.hpp"
-
-// A*算法
-#include "Astar.hpp"
 
 // 获取一个新的物品
 #include "FindNewGoal.hpp"

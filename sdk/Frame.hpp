@@ -24,7 +24,8 @@ void PerframeInput() {
 void PerframeUpdate() {
     queue<Cargo> c;
     // 当大于1000帧的时候物品消失
-    for (int i = 0; i < cargos.size(); i++) {
+    int zsize = cargos.size();
+    for (int i = 0; i < zsize; i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
         if (cargo.time - id > 1000)
@@ -76,8 +77,6 @@ void PerframeUpdate() {
             cargos.push(cargo);
             continue;
         }
-//        log("分配货物:" + to_string(robot_id));
-//        log("新物品的val:" + to_string(cargo.val));
         vector<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
         // 如果没有找到路径就把货物重新放入队列
         if (road.empty()) {
@@ -100,7 +99,7 @@ void PerframeUpdate() {
             robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
                                             berths[berth_id].y, berth_id);
         }
-        if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
+        if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
             RobotFindNewGoal(cargos, robots[i]);
         }
         if (robots[i].cargo.val != 0 && (robots[i].road.size() + id - robots[i].cargo.time > 1000)) {

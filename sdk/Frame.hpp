@@ -80,9 +80,9 @@ void PerframeUpdate() {
             cargos.push(cargo);
             continue;
         }
-        vector<pair<int, int>> road = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
+        Robotlib::Path path = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
         // 如果没有找到路径就把货物重新放入队列
-        if (road.empty()) {
+        if (path.road.empty()) {
             cargos.push(cargo);
             continue;
         }
@@ -90,22 +90,22 @@ void PerframeUpdate() {
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);
         }
-        robots[robot_id].setGoal(cargo, berth_time, berth_id, road);
+        robots[robot_id].setGoal(cargo, berth_time, berth_id, path);
         break;
     }
     //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].status == 0)continue;
         if (robots[i].goods == 1 &&
-            robots[i].road.empty()) {
+            robots[i].path.road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
-            robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
+            robots[i].path = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
                                             berths[berth_id].y, berth_id);
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
             RobotFindNewGoal(cargos, robots[i]);
         }
-        if (robots[i].cargo.val != 0 && (robots[i].road.size() + id - robots[i].cargo.time > 1000)) {
+        if (robots[i].cargo.val != 0 && (robots[i].path.road.size() + id - robots[i].cargo.time > 1000)) {
             robots[i].Reset(false);
         }
     }
@@ -121,16 +121,16 @@ void PerframeOutput() {
     //    }
     for (int i = 0; i < robot_num; i++) {
         // 如果机器人路径不为空就继续走
-        if (!robots[i].road.empty()) {
-            pair<int, int> next = robots[i].road.front();
-            robots[i].road.erase(robots[i].road.begin());
+        if (!robots[i].path.road.empty()) {
+            pair<int, int> next = robots[i].path.road.front();
+            robots[i].path.road.erase(robots[i].path.road.begin());
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
                 robots[i].Reset(false);
             } else {
                 // 机器人移动
                 robots[i].move(next.first, next.second);
-                if (robots[i].road.empty()) {
+                if (robots[i].path.road.empty()) {
                     if (robots[i].goods == 0) {
                         // 机器人没有货物,就去拿货物
                         robots[i].getThings(next.first, next.second);

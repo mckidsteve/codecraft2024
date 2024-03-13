@@ -28,16 +28,6 @@ namespace Robotlib {
             return states;
         }
 
-//        AllPaths *clone() {
-//            AllPaths *other = new AllPaths(time);
-//            other->RobotPos = RobotPos;
-//            other->roads = roads;
-//            other->constraints = constraints;
-//            other->clashs = clashs;
-//            other->compute();
-//            return other;
-//        }
-
         //清理
         void clear() {
             roads.clear();
@@ -54,6 +44,7 @@ namespace Robotlib {
             }
         }
 
+        //改变路径
         void ChangePath(int robot_id, Path &path) {
             roads[robot_id] = path;
             int z = clashs.size();
@@ -131,6 +122,34 @@ namespace Robotlib {
             //log("计算数据");
             compute();
             //log("计算数据成功");
+        }
+
+        //判断是否有冲突
+        int ClashTime(int robot_id, State nowstate, State nextstate, const int basetime) {
+            int num = 0;
+            int i = nextstate.time - basetime - 1;
+            for (int j = 0; j < robot_num; j++) {
+                if (j == robot_id)continue;
+                if (roads[j].road.size() <= i)continue;
+                if (make_pair(nextstate.x, nextstate.y) == roads[j].road[i]) {
+                    num++;
+                    continue;
+                }
+                if (i > 0) {
+                    if ((make_pair(nextstate.x, nextstate.y) == roads[j].road[i - 1]
+                         && make_pair(nowstate.x, nowstate.y) == roads[j].road[i])) {
+                        num++;
+                        continue;
+                    }
+                } else {
+                    if ((make_pair(nextstate.x, nextstate.y) == RobotPos[j]
+                         && make_pair(nowstate.x, nowstate.y) == roads[j].road[i])) {
+                        num++;
+                        continue;
+                    }
+                }
+            }
+            return num;
         }
     };
 }

@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include "AllPaths.hpp"
 #include "State.hpp"
 #include "Queue.hpp"
 #include "Path.hpp"
@@ -23,16 +24,9 @@ namespace Robotlib {
                 : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis) {}
 
         bool
-        SearchToCargo(Robotlib::Path &path, int time, std::pair<int, int> start,
-                      std::pair<int, int> goal,
-                      std::unordered_set<State> &obstacles) {
-            SearchToBerth(path, time, start, goal, obstacles, -1);
-        }
-
-        bool
         SearchToBerth(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
-                      const unordered_set<State> &obstacles, int berthid) {
+                      const unordered_set<State> &obstacles, int berthid, int robot_id, AllPaths *allPaths) {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
             std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合
@@ -40,7 +34,7 @@ namespace Robotlib {
             std::unordered_set<Node *> finished_set;//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
             Node *start_node = new Node(State(start, time), 0,
-                                        heuristicToBerth(State(start, time), goal_state, berthid),
+                                        heuristicToBerth(State(start, time), goal_state, berthid, time), 0,
                                         nullptr);
             open_set.push(start_node);
             focal_set.push(start_node);
@@ -77,9 +71,10 @@ namespace Robotlib {
                         continue;
                     }
                     State next_state(nextx, nexty, nexttime);
+                    int clash = node->clash + allPaths->ClashTime(robot_id, node->state, next_state, time);
                     double g = node->g + 1;
-                    double h = heuristicToBerth(next_state, goal_state, berthid);
-                    Node *next_node = new Node(next_state, g, h, node);
+                    double h = heuristicToBerth(next_state, goal_state, berthid, time);
+                    Node *next_node = new Node(next_state, g, h, clash, node);
                     if (close_set.count(next_state) == 0) {
                         finished_set.insert(next_node);
                         open_set.push(next_node);
@@ -122,10 +117,12 @@ namespace Robotlib {
             double g;//g值
             double h;//h值
             double f;//f值, f = g + h
+            int clash{};//冲突次数
             bool use{};//是否使用
             Node *parent;//父节点
             //构造函数
-            Node(State state, double g, double h, Node *p) : state(state), g(g), h(h), f(g + h), parent(p) {}
+            Node(State state, double g, double h, int clash, Node *p) : state(state), g(g), h(h), f(g + h),
+                                                                        clash(clash), parent(p) {}
 
             //判断是否为目标状态
             bool isGoalToCargo(const pair<int, int> &goal) const {
@@ -160,19 +157,23 @@ namespace Robotlib {
         //焦点比较函数
         struct CompareNode {
             bool operator()(const Node *lhs, const Node *rhs) const {
-                return lhs->f > rhs->f;
+                if (lhs->clash != rhs->clash)
+                    return lhs->clash > rhs->clash;
+                else return lhs->f > rhs->f;
             }
         };
 
         //启发函数
-        int heuristicToCargo(const State &a, const State &b) {
+        int heuristicToCargo(const State &a, const State &b, const int basetime) {
             return abs(a.x - b.x) + abs(a.y - b.y);
+            //return abs(a.x - b.x) + abs(a.y - b.y) + a.time - basetime;
         }
 
         //启发函数
-        int heuristicToBerth(const State &a, const State &b, int berthid) {
-            if (berthid == -1)return heuristicToCargo(a, b);
+        int heuristicToBerth(const State &a, const State &b, int berthid, const int basetime) {
+            if (berthid == -1)return heuristicToCargo(a, b, basetime);
             return berth_dis[a.x][a.y][berthid];
+            //return berth_dis[a.x][a.y][berthid] + a.time - basetime;
         }
 
         //状态

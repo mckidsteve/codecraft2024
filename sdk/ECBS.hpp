@@ -2,7 +2,6 @@
 
 #include "AStarEpsilon.hpp"
 #include "ROBOT.hpp"
-#include "AllPaths.hpp"
 
 namespace Robotlib {
     class ECBS {
@@ -15,6 +14,10 @@ namespace Robotlib {
         //机器人需要有自己的目标cargo或者Berth
         void Search(int robot_id, int end_x, int end_y, int time, int berth_id) {
             //路径不为空就不进行搜索
+//            log("机器人id" + to_string(robot_id));
+//            log(" start_x:" + to_string(robots[robot_id]->x) + " start_y:" + to_string(robots[robot_id]->y));
+//            log(" end_x:" + to_string(end_x) + " end_y:" + to_string(end_y));
+//            log(" time:" + to_string(time) + " berth_id:" + to_string(berth_id));
             if (!robots[robot_id]->path.road.empty())return;
             AllPaths *all_paths = new AllPaths(time);
             for (int i = 0; i < robot_num; i++) {
@@ -24,7 +27,8 @@ namespace Robotlib {
             //初始化搜索路径
             Path path;
             starEpsilon.SearchToBerth(path, time, make_pair(robots[robot_id]->x, robots[robot_id]->y),
-                                      make_pair(end_x, end_y), all_paths->getRobotofConstraint(robot_id), berth_id);
+                                      make_pair(end_x, end_y), all_paths->getRobotofConstraint(robot_id), berth_id,
+                                      robot_id, all_paths);
             all_paths->ChangePath(robot_id, path);
             std::PriorityQueue<AllPaths *, AllPathsPtrComparator> open_set;//开放集合
             std::priority_queue<AllPaths *, std::vector<AllPaths *>, AllPathsCompareNode> focal_set;//焦点集合
@@ -37,6 +41,7 @@ namespace Robotlib {
             AllPaths *goal;
             int num = 0;
             while (!open_set.empty()) {
+                num++;
                 double old_min_f = min_f;
                 min_f = open_set.top()->min_f;
                 if (min_f > old_min_f) {
@@ -49,7 +54,7 @@ namespace Robotlib {
                 AllPaths *node = focal_set.top();
 //                bool f = true;
 //                int count = 0;
-//                while (!node->clashs.empty() && f) {
+//                while (!node->clashs.empty() && f && num > 3) {
 //                    count = 1;
 //                }
                 //判断是否为目标状态
@@ -93,7 +98,7 @@ namespace Robotlib {
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
                                                   next_node_1->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id);
+                                                  next_berth_id, next_robot_id, next_node_1);
                         next_node_1->ChangePath(next_robot_id, next_path_1);
                         finished_set.insert(next_node_1);
                         open_set.push(next_node_1);
@@ -132,7 +137,7 @@ namespace Robotlib {
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
                                                   next_node_2->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id);
+                                                  next_berth_id, next_robot_id, next_node_2);
                         next_node_2->ChangePath(next_robot_id, next_path_2);
                         finished_set.insert(next_node_2);
                         open_set.push(next_node_2);
@@ -171,7 +176,7 @@ namespace Robotlib {
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
                                                   next_node_1->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id);
+                                                  next_berth_id, next_robot_id, next_node_1);
                         next_node_1->ChangePath(next_robot_id, next_path_1);
                         finished_set.insert(next_node_1);
                         open_set.push(next_node_1);
@@ -210,7 +215,7 @@ namespace Robotlib {
                                                   make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                   make_pair(next_end_x, next_end_y),
                                                   next_node_2->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id);
+                                                  next_berth_id, next_robot_id, next_node_2);
                         next_node_2->ChangePath(next_robot_id, next_path_2);
                         finished_set.insert(next_node_2);
                         open_set.push(next_node_2);
@@ -229,7 +234,7 @@ namespace Robotlib {
             if (!flag) {
                 return;
             }
-            log("ECBS成功");
+            log("ECBS成功" + to_string(num));
             for (int i = 0; i < robot_num; i++) {
                 robots[i]->path = goal->roads[i];
             }

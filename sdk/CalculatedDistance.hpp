@@ -31,3 +31,20 @@ int CargotoBerth(Cargo &c) {
     }
     return min_id;
 }
+
+// 货物到机器人的距离
+int CargotoRobot(Cargo &c, Robot &r) {
+    int min = MAXNUM;
+    int size = random_point.size();
+    for (int i = 0; i < size; i++) {
+        if (random_dis[c.x][c.y][i] == -1)
+            continue;
+        if (random_dis[r.x][r.y][i] == -1)
+            continue;
+        int z = random_dis[c.x][c.y][i] + random_dis[r.x][r.y][i];
+        if (z < min) {
+            min = z;
+        }
+    }
+    return min;
+}

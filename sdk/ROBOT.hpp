@@ -30,7 +30,7 @@ public:
     void putThings(int x, int y);
 
     // 设置机器人要拿取什么物品
-    void setGoal(Cargo c, double dis, int brenth_id, Robotlib::Path &r);
+    void setGoal(Cargo c, double dis, int brenth_id);
 
     // 机器人移动
     void move(int x, int y);

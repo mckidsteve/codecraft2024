@@ -27,11 +27,6 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     }
     if (max_value <= 0)
         return;
-//    log("重新获取货物:" + to_string(r.id));
-//    log("新物品的val:" + to_string(goal.val));
-    Robotlib::Path path = getRoadtoCargo(r.x, r.y, goal.x, goal.y);
-    if (path.road.empty())
-        return;
     // 删除被拿走的物品
     queue<Cargo> c;
     while (!cargos.empty()) {
@@ -42,5 +37,5 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         c.push(ca);
     }
     cargos = c;
-    r.setGoal(goal, goal_time, goal_id, path);
+    r.setGoal(goal, goal_time, goal_id);
 }

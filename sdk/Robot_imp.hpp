@@ -1,12 +1,10 @@
 #pragma once
 
 #include "ROBOT.hpp"
-#include "Dist.hpp"
 
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
-    path = getRoadtoBerth(x, y, berths[berthid].x,
-                          berths[berthid].y, berthid);
+    ecbs->Search(id, berths[berthid].x, berths[berthid].y, zhen, berthid);
 }
 
 void Robot::putThings(int x, int y) {
@@ -41,13 +39,13 @@ void Robot::Reset(bool complete) {
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, double dis, int brenth_id, Robotlib::Path &r) {
-    //    log("机器人id:" + to_string(id));
+void Robot::setGoal(Cargo c, double dis, int brenth_id) {
+    //    log("机器人id:" + to_string(zhen));
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));
     //    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
-    path = r;
+    ecbs->Search(id, cargo.x, cargo.y, zhen, -1);
 }

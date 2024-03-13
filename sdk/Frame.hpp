@@ -31,6 +31,7 @@ void PerframeUpdate() {
             continue;
         c.push(cargo);
     }
+    cargos = c;
     // 每帧处理一个新货物
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {

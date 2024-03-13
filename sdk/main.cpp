@@ -29,16 +29,17 @@ vector<pair<int, int>> random_point;
 int id;
 
 #include "AStarEpsilon.hpp"
+#include "ECBS.hpp"
 #include "CoverToVector.hpp"
 
 using Robotlib::AStarEpsilon;
-using Robotlib::State;
+using Robotlib::ECBS;
 AStarEpsilon *starEpsilon;
+ECBS *ecbs;
 
 #include "CARGO.hpp"
 
 // 货物
-struct Cargo default_cargo(0, 0, 0, 0);
 
 // 所有货物队列
 queue<Cargo> cargos;

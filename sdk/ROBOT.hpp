@@ -2,6 +2,7 @@
 
 #include "CARGO.hpp"
 #include "Path.hpp"
+#include "CARGO.hpp"
 
 class Robot {
 public:

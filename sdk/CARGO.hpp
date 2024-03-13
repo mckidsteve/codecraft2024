@@ -7,3 +7,5 @@ struct Cargo {
     int time; // 货物的产生时间
     Cargo(int x, int y, int val, int time) : x(x), y(y), val(val), time(time) {}
 };
+
+struct Cargo default_cargo(0, 0, 0, 0);

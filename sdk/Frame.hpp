@@ -23,6 +23,9 @@ void PerframeInput() {
 // 每帧的更新
 void PerframeUpdate() {
     queue<Cargo> c;
+//    for (int i = 0; i < berth_num; i++) {
+//        log("泊位还有物品个数" + to_string(berths[i].things.size()));
+//    }
     // 当大于1000帧的时候物品消失
     int zsize = cargos.size();
     for (int i = 0; i < zsize; i++) {

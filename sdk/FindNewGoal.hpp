@@ -1,9 +1,6 @@
 #pragma once
 
 void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
-    if (r.id == 0) {
-        log("机器人0号重新获取货物");
-    }
     double max_value = 0;
     int goal_id;
     double goal_time;

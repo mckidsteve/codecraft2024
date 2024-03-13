@@ -169,6 +169,7 @@ void Init() {
 //        mapfile.close();
 //    }
 #endif
+    log("轮船运载能力" + to_string(boat_capacity));
     printf("OK\n");
     fflush(stdout);
 }

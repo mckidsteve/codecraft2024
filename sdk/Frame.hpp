@@ -23,14 +23,19 @@ void PerframeInput() {
 // 每帧的更新
 void PerframeUpdate() {
     queue<Cargo> c;
+//    for (int i = 0; i < berth_num; i++) {
+//        log("泊位还有物品个数" + to_string(berths[i].things.size()));
+//    }
     // 当大于1000帧的时候物品消失
-    for (int i = 0; i < cargos.size(); i++) {
+    int zsize = cargos.size();
+    for (int i = 0; i < zsize; i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
         if (cargo.time - id > 1000)
             continue;
         c.push(cargo);
     }
+    cargos = c;
     // 每帧处理一个新货物
     bool have_robot = false;
     for (int i = 0; i < robot_num; i++) {
@@ -63,9 +68,6 @@ void PerframeUpdate() {
             double robot_value =
                     robots[i].cargo.val * 1.0 /
                     max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
-            //            double robot_value =
-            //                    robots[i].cargo.val * 1.0 /
-            //                    max(1.0, (int) robots[i].road.size() + robots[i].cargotoberth);
             if (robot_value > value)
                 continue;
             if (value - robot_value > max_value) {
@@ -100,7 +102,7 @@ void PerframeUpdate() {
             robots[i].road = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
                                             berths[berth_id].y, berth_id);
         }
-        if (robots[i].cargo.val == 0 && robots[i].goods == 0) {
+        if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
             RobotFindNewGoal(cargos, robots[i]);
         }
         if (robots[i].cargo.val != 0 && (robots[i].road.size() + id - robots[i].cargo.time > 1000)) {

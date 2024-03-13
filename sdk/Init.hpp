@@ -131,6 +131,45 @@ void Init() {
         }
     }
     starEpsilon = new AStarEpsilon(game_map, 1.5, berth_dis);
+    //输出地图情况
+#ifdef _WIN32
+    ofstream mapfile;
+//    mapfile.open("finish_map.txt", ios::out | ios::trunc);
+//    for (int i = 0; i < n; i++) {
+//        for (int j = 0; j < n; j++) {
+//            mapfile << game_map[i][j];
+//        }
+//        mapfile << endl;
+//    }
+//    mapfile.close();
+//    for (int k = 0; k < berth_num; k++) {
+//        mapfile.open("berth_map_" + to_string(k) + ".txt", ios::out | ios::trunc);
+//        for (int i = 0; i < n; i++) {
+//            for (int j = 0; j < n; j++) {
+//                if (berth_dis[i][j][k] == -1)mapfile << "#";
+//                else if (berth_dis[i][j][k] == 0)mapfile << "0";
+//                else mapfile << ".";
+//            }
+//            mapfile << endl;
+//        }
+//        mapfile.close();
+//    }
+//    unsigned long long int size1 = random_point.size();
+//    for (int k = 0; k < size1; k++) {
+//        mapfile.open("./random_point/random_map_" + to_string(k) + ".txt", ios::out | ios::trunc);
+//        for (int i = 0; i < n; i++) {
+//            for (int j = 0; j < n; j++) {
+//                if (random_dis[i][j][k] == -1)mapfile << "#";
+//                else if (random_dis[i][j][k] == 0 && random_point[k].first == i && random_point[k].second == j)
+//                    mapfile << "0";
+//                else mapfile << ".";
+//            }
+//            mapfile << endl;
+//        }
+//        mapfile.close();
+//    }
+#endif
+    log("轮船运载能力" + to_string(boat_capacity));
     printf("OK\n");
     fflush(stdout);
 }

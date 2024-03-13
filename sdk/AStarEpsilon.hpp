@@ -41,15 +41,7 @@ namespace Robotlib {
             close_set.insert(start_node->state);
             double min_f = start_node->f;
             bool flag = false;
-//            int num = 0;
-//            log("开始搜索");
-//            log("start.x:" + to_string(start.first) + " start.y:" + to_string(start.second));
-//            log("goal.x:" + to_string(goal.first) + " goal.y:" + to_string(goal.second));
             while (!open_set.empty()) {
-//                log("第" + to_string(num++) + "次搜索");
-//                log("open_set.size():" + to_string(open_set.size()));
-//                log("focal_set.size():" + to_string(focal_set.size()));
-//                log("close_set.size():" + to_string(close_set.size()));
                 double old_min_f = min_f;
                 min_f = open_set.top()->f;
                 if (min_f > old_min_f) {
@@ -60,15 +52,12 @@ namespace Robotlib {
                     }
                 }
                 Node *node = focal_set.top();
-//                log("当前节点x:" + to_string(node->state.x) + " y:" + to_string(node->state.y) + " time:" +
-//                    to_string(node->state.time));
                 //判断是否为目标状态
                 if (node->isGoalToCargo(goal)) {
                     flag = true;
                     break;
                 }
                 focal_set.pop();
-                //open_set.remove(node);
                 node->use = true;
                 int z = directions_.size();
                 for (int i = 0; i < z; i++) {
@@ -94,14 +83,6 @@ namespace Robotlib {
                         delete next_node;
                     }
                 }
-                //遍历open_set
-//                int zz = 0;
-//                for (auto it = open_set.begin(); it != open_set.end(); ++it) {
-//                    Node *node = *it;
-//                    log("open_set" + to_string(zz) + ".x:" + to_string(node->state.x) + " y:" +
-//                        to_string(node->state.y) + " time:" +
-//                        to_string(node->state.time) + "use:" + to_string(node->use));
-//                }
                 while (!open_set.empty() && open_set.top()->use)open_set.pop();
             }
             if (!flag) {
@@ -113,6 +94,7 @@ namespace Robotlib {
                 path.road.emplace_back(node->state.x, node->state.y);
                 node = node->parent;
             }
+            path.min_f = min_f;
             //反转路径
             std::reverse(path.road.begin(), path.road.end());
             //释放内存
@@ -158,7 +140,6 @@ namespace Robotlib {
                     break;
                 }
                 focal_set.pop();
-                //open_set.remove(node);
                 node->use = true;
                 int z = directions_.size();
                 for (int i = 0; i < z; i++) {
@@ -195,6 +176,7 @@ namespace Robotlib {
                 path.road.emplace_back(node->state.x, node->state.y);
                 node = node->parent;
             }
+            path.min_f = min_f;
             //反转路径
             std::reverse(path.road.begin(), path.road.end());
             //释放内存

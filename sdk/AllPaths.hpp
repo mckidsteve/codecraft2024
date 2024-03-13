@@ -59,6 +59,7 @@ namespace Robotlib {
             int z = clashs.size();
             bool finish[z];
             memset(finish, false, sizeof(finish));
+            //log("清理过时冲突");
             for (int i = 0; i < z; i++) {
                 ClashRobot &clash = clashs[i];
                 int nexttime = clash.time - time;
@@ -92,15 +93,21 @@ namespace Robotlib {
                     clashs.erase(clashs.begin() + i);  // 删除满足条件的元素
                 }
             }
+            //log("清理过时冲突成功");
             //添加新的冲突
             //机器人不动的情况下的冲突待解决
             //
             //
             //
+//            log("搜索新的冲突");
+//            for (int i = 0; i < robot_num; i++) {
+//                log("路径" + to_string(i) + "的长度" + to_string(roads[i].road.size()));
+//            }
             int road_size = path.road.size();
-            for (int i = 0; i < road_size; i++) {
-                for (int j = 0; j < robot_num; j++) {
-                    if (j == robot_id || roads[robot_id].road.size() <= i)continue;
+            for (int j = 0; j < robot_num; j++) {
+                if (j == robot_id)continue;
+                for (int i = 0; i < road_size; i++) {
+                    if (roads[j].road.size() <= i)break;
                     if (roads[robot_id].road[i] == roads[j].road[i]) {
                         clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, j);
                         continue;
@@ -120,7 +127,10 @@ namespace Robotlib {
                     }
                 }
             }
+            //log("搜索新的冲突成功");
+            //log("计算数据");
             compute();
+            //log("计算数据成功");
         }
     };
 }

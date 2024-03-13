@@ -15,11 +15,14 @@ namespace Robotlib {
         //机器人需要有自己的目标cargo或者Berth
         void Search(int robot_id, int end_x, int end_y, int time, int berth_id) {
             //路径不为空就不进行搜索
+            log("机器人id" + to_string(robot_id) + " end_x:" + to_string(end_x)
+                + " end_y:" + to_string(end_y) + " time:" + to_string(time)
+                + " berth_id:" + to_string(berth_id));
             if (!robots[robot_id]->path.road.empty())return;
             AllPaths *all_paths = new AllPaths(time);
             for (int i = 0; i < robot_num; i++) {
-                all_paths->roads.push_back(robots[robot_id]->path);
-                all_paths->RobotPos.emplace_back(robots[robot_id]->x, robots[robot_id]->y);
+                all_paths->roads.push_back(robots[i]->path);
+                all_paths->RobotPos.emplace_back(robots[i]->x, robots[i]->y);
             }
             //初始化搜索路径
             Path path;
@@ -35,7 +38,10 @@ namespace Robotlib {
             double min_f = all_paths->min_f;
             bool flag = false;
             AllPaths *goal;
+            int num = 0;
+            log("开始高纬度A*");
             while (!open_set.empty()) {
+                log("循环次数:" + to_string(num++));
                 double old_min_f = min_f;
                 min_f = open_set.top()->min_f;
                 if (min_f > old_min_f) {
@@ -223,6 +229,7 @@ namespace Robotlib {
             if (!flag) {
                 return;
             }
+            log("ECBS成功");
             for (int i = 0; i < robot_num; i++) {
                 robots[i]->path = goal->roads[i];
             }

@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include "State.hpp"
 #include "Queue.hpp"
+#include "Path.hpp"
 #include "log.hpp"
 
 namespace Robotlib {

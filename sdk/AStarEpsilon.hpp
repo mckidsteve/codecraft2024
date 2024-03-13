@@ -32,7 +32,7 @@ namespace Robotlib {
         bool
         SearchToBerth(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
-                      std::unordered_set<State> &obstacles, int berthid) {
+                      const unordered_set<State> &obstacles, int berthid) {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
             std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合

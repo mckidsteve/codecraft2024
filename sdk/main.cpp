@@ -28,15 +28,6 @@ vector<pair<int, int>> random_point;
 
 int id;
 
-#include "AStarEpsilon.hpp"
-#include "ECBS.hpp"
-#include "CoverToVector.hpp"
-
-using Robotlib::AStarEpsilon;
-using Robotlib::ECBS;
-AStarEpsilon *starEpsilon;
-ECBS *ecbs;
-
 #include "CARGO.hpp"
 
 // 货物
@@ -63,7 +54,15 @@ class Berth berths[berth_num];
 #include "Robot_imp.hpp"
 #include "Boat_imp.hpp"
 #include "Berth_imp.hpp"
+#include "CalculatedDistance.hpp"
+#include "AStarEpsilon.hpp"
+#include "ECBS.hpp"
+#include "CoverToVector.hpp"
 
+using Robotlib::AStarEpsilon;
+using Robotlib::ECBS;
+AStarEpsilon *starEpsilon;
+ECBS *ecbs;
 // 初始化
 #include "Init.hpp"
 

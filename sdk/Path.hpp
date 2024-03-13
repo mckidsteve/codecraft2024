@@ -9,6 +9,7 @@ namespace Robotlib {
 
         void clear() {
             road.clear();
+            min_f = 0;
         }
     };
 }

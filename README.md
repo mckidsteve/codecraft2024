@@ -3,6 +3,7 @@
 #### 介绍
 codecraft2024
 3.8-3.9休息
+3.13 18：00 update更新了PerframeUpdate函数，优化了最后帧的决策。在FindNewGoal文件中新增了RobotFindNewGoalatLast函数。对PerframeUpdate中部分代码存疑，最后帧的决策仍需要写一个选三个待定港口的决策函数。
 
 # design
 - 初始化 (地图 , 机器人 , 轮船 , 泊位)

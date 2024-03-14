@@ -1,5 +1,7 @@
 #include<vector>
 
+#define Ttime 3
+
 #include "Path.hpp"
 #include "State.hpp"
 #include "ConstraintRobot.hpp"
@@ -10,7 +12,7 @@ namespace Robotlib {
         std::vector<std::pair<int, int>> RobotPos{};//机器人坐标
         std::vector<Path> roads{};//所有路径
         std::vector<ConstraintRobot> constraints{};//目前对机器人的限制
-        std::vector<ClashRobot> clashs{};//目前的冲突情况
+        std::unordered_set<ClashRobot> clashs{};//目前的冲突情况
         double cost{};//路径总花费
         double min_f{};//min_f总价
         int time{};
@@ -52,47 +54,50 @@ namespace Robotlib {
             bool finish[z];
             memset(finish, false, sizeof(finish));
             //log("清理过时冲突");
-            for (int i = 0; i < z; i++) {
-                ClashRobot &clash = clashs[i];
+            //遍历clashs
+            int i = 0;
+            for (auto it = clashs.begin(); it != clashs.end();) {
+                ClashRobot clash = *it;
                 int nexttime = clash.time - time;
                 if (robot_id != clash.robot_id_1 && robot_id != clash.robot_id_2)continue;
                 if (robot_id == clash.robot_id_1 && clash.robot_id_2 == -1) {
                     if (roads[clash.robot_id_1].road.size() < nexttime) {
-                        finish[i] = true;
+                        it = clashs.erase(it);
                     } else if (clash.dian &&
                                roads[clash.robot_id_1].road[nexttime - 1] != make_pair(clash.x, clash.y)) {
-                        finish[i] = true;
+                        it = clashs.erase(it);
                     }
                     continue;
                 }
                 if (roads[clash.robot_id_1].road.size() < nexttime || roads[clash.robot_id_2].road.size() < nexttime) {
-                    finish[i] = true;
+                    it = clashs.erase(it);
                     continue;
                 }
                 //路径冲突
                 if (clash.dian &&
-                    roads[clash.robot_id_1].road[nexttime - 1] == roads[clash.robot_id_2].road[nexttime - 1])
+                    roads[clash.robot_id_1].road[nexttime - 1] == roads[clash.robot_id_2].road[nexttime - 1]) {
+                    it++;
                     continue;
+                }
                 //交错身位
                 if (!clash.dian) {
                     if (nexttime > 1) {
                         if ((roads[clash.robot_id_1].road[nexttime - 1] == roads[clash.robot_id_2].road[nexttime - 2]
                              &&
-                             roads[clash.robot_id_1].road[nexttime - 2] == roads[clash.robot_id_2].road[nexttime - 1]))
+                             roads[clash.robot_id_1].road[nexttime - 2] ==
+                             roads[clash.robot_id_2].road[nexttime - 1])) {
+                            it++;
                             continue;
+                        }
                     } else {
                         if ((roads[clash.robot_id_1].road[nexttime - 1] == RobotPos[clash.robot_id_2]
-                             && RobotPos[clash.robot_id_1] == roads[clash.robot_id_2].road[nexttime - 1]))
+                             && RobotPos[clash.robot_id_1] == roads[clash.robot_id_2].road[nexttime - 1])) {
+                            it++;
                             continue;
+                        }
                     }
                 }
-                finish[i] = true;
-            }
-            // 从后往前遍历，这样删除元素时不会影响未检查的元素的索引
-            for (int i = clashs.size() - 1; i >= 0; --i) {
-                if (finish[i]) {
-                    clashs.erase(clashs.begin() + i);  // 删除满足条件的元素
-                }
+                it = clashs.erase(it);
             }
             int road_size = path.road.size();
             for (int j = 0; j < robot_num; j++) {
@@ -100,32 +105,47 @@ namespace Robotlib {
                 for (int i = 0; i < road_size; i++) {
                     unsigned long long int size1 = roads[j].road.size();
                     if (size1 <= i) {
-                        if (i - size1 > 20)break;
+                        if (i - size1 > Ttime)break;
                         if (size1 == 0) {
                             if (roads[robot_id].road[i] == RobotPos[j]) {
-                                clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                                ClashRobot clashRobot(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                                if (clashs.count(clashRobot) == 0) {
+                                    clashs.insert(clashRobot);
+                                }
                             }
                         } else {
                             if (roads[robot_id].road[i] == roads[j].road.back()) {
-                                clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                                ClashRobot clashRobot(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                                if (clashs.count(clashRobot) == 0) {
+                                    clashs.insert(clashRobot);
+                                }
                             }
                         }
                         continue;
                     }
                     if (roads[robot_id].road[i] == roads[j].road[i]) {
-                        clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, j);
+                        ClashRobot clashRobot(roads[robot_id].road[i], time + i + 1, robot_id, j);
+                        if (clashs.count(clashRobot) == 0) {
+                            clashs.insert(clashRobot);
+                        }
                         continue;
                     }
                     if (i > 0) {
                         if ((roads[robot_id].road[i] == roads[j].road[i - 1]
                              && roads[robot_id].road[i - 1] == roads[j].road[i])) {
-                            clashs.emplace_back(roads[robot_id].road[i], roads[j].road[i], time + i + 1, robot_id, j);
+                            ClashRobot clashRobot(roads[robot_id].road[i], roads[j].road[i], time + i + 1, robot_id, j);
+                            if (clashs.count(clashRobot) == 0) {
+                                clashs.insert(clashRobot);
+                            }
                             continue;
                         }
                     } else {
                         if ((roads[robot_id].road[i] == RobotPos[j]
                              && RobotPos[robot_id] == roads[j].road[i])) {
-                            clashs.emplace_back(roads[robot_id].road[i], roads[j].road[i], time + i + 1, robot_id, j);
+                            ClashRobot clashRobot(roads[robot_id].road[i], roads[j].road[i], time + i + 1, robot_id, j);
+                            if (clashs.count(clashRobot) == 0) {
+                                clashs.insert(clashRobot);
+                            }
                             continue;
                         }
                     }
@@ -145,7 +165,7 @@ namespace Robotlib {
                 if (j == robot_id)continue;
                 unsigned long long int size1 = roads[j].road.size();
                 if (size1 <= i) {
-                    if (i - size1 > 20)continue;
+                    if (i - size1 > Ttime)continue;
                     if (roads[j].road.empty()) {
                         if (nextstate.x == RobotPos[j].first && nextstate.y == RobotPos[j].second) {
                             num++;

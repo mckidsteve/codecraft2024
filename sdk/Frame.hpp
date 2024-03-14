@@ -22,11 +22,11 @@ void PerframeInput() {
 
 // 每帧的更新
 void PerframeUpdate() {
-//    bool f = true;
-//    int count = 0;
-//    while (zhen == 98 && f) {
-//        count = 1;
-//    }
+    bool f = true;
+    int count = 0;
+    while (zhen == 27 && f) {
+        count = 1;
+    }
     queue<Cargo> c;
 //    for (int i = 0; i < berth_num; i++) {
 //        log("泊位还有物品个数" + to_string(berths[i].things.size()));

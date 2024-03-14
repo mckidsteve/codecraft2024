@@ -78,18 +78,17 @@ namespace Robotlib {
                 int next_robot_id;
                 int next_end_x, next_end_y;
                 int next_berth_id;
-                for (int i = 0; i < z; i++) {
-                    ClashRobot &clashRobot = node->clashs[i];
-                    if (clashRobot.dian) {
+                for (auto it = node->clashs.begin(); it != node->clashs.end(); it++) {
+                    if (it->dian) {
                         AllPaths *next_node_1 = new AllPaths(*node);
-                        next_node_1->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
-                                                              clashRobot.robot_id_1);
+                        next_node_1->constraints.emplace_back(it->x, it->y, it->time,
+                                                              it->robot_id_1);
                         next_node_1->infoc = next_node_1->use = false;
                         Path next_path_1;
-                        next_robot_id = clashRobot.robot_id_1;
+                        next_robot_id = it->robot_id_1;
                         if (next_robot_id != -1) {
                             bool f = false;
-                            if (clashRobot.robot_id_1 == robot_id) {
+                            if (it->robot_id_1 == robot_id) {
                                 next_end_x = end_x;
                                 next_end_y = end_y;
                                 next_berth_id = berth_id;
@@ -128,14 +127,14 @@ namespace Robotlib {
 
 
                         AllPaths *next_node_2 = new AllPaths(*node);
-                        next_node_2->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
-                                                              clashRobot.robot_id_2);
+                        next_node_2->constraints.emplace_back(it->x, it->y, it->time,
+                                                              it->robot_id_2);
                         next_node_2->infoc = next_node_2->use = false;
                         Path next_path_2;
-                        next_robot_id = clashRobot.robot_id_2;
+                        next_robot_id = it->robot_id_2;
                         if (next_robot_id != -1) {
                             bool f = false;
-                            if (clashRobot.robot_id_2 == robot_id) {
+                            if (it->robot_id_2 == robot_id) {
                                 next_end_x = end_x;
                                 next_end_y = end_y;
                                 next_berth_id = berth_id;
@@ -173,14 +172,14 @@ namespace Robotlib {
                         }
                     } else {
                         AllPaths *next_node_1 = new AllPaths(*node);
-                        next_node_1->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
-                                                              clashRobot.robot_id_1);
+                        next_node_1->constraints.emplace_back(it->x, it->y, it->time,
+                                                              it->robot_id_1);
                         next_node_1->infoc = next_node_1->use = false;
                         Path next_path_1;
-                        next_robot_id = clashRobot.robot_id_1;
+                        next_robot_id = it->robot_id_1;
                         if (next_robot_id != -1) {
                             bool f = false;
-                            if (clashRobot.robot_id_1 == robot_id) {
+                            if (it->robot_id_1 == robot_id) {
                                 next_end_x = end_x;
                                 next_end_y = end_y;
                                 next_berth_id = berth_id;
@@ -217,14 +216,14 @@ namespace Robotlib {
                             }
                         }
                         AllPaths *next_node_2 = new AllPaths(*node);
-                        next_node_2->constraints.emplace_back(clashRobot.x2, clashRobot.y2, clashRobot.time,
-                                                              clashRobot.robot_id_2);
+                        next_node_2->constraints.emplace_back(it->x2, it->y2, it->time,
+                                                              it->robot_id_2);
                         next_node_2->infoc = next_node_2->use = false;
                         Path next_path_2;
-                        next_robot_id = clashRobot.robot_id_2;
+                        next_robot_id = it->robot_id_2;
                         if (next_robot_id != -1) {
                             bool f = false;
-                            if (clashRobot.robot_id_2 == robot_id) {
+                            if (it->robot_id_2 == robot_id) {
                                 next_end_x = end_x;
                                 next_end_y = end_y;
                                 next_berth_id = berth_id;

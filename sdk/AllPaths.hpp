@@ -142,29 +142,29 @@ namespace Robotlib {
                 if (j == robot_id)continue;
                 if (roads[j].road.size() <= i) {
                     if (roads[j].road.empty()) {
-                        if (make_pair(nextstate.x, nextstate.y) == RobotPos[j]) {
+                        if (nextstate.x == RobotPos[j].first && nextstate.y == RobotPos[j].second) {
                             num++;
                         }
                     } else {
-                        if (make_pair(nextstate.x, nextstate.y) == roads[j].road.back()) {
+                        if (nextstate.x == roads[j].road.back().first && nextstate.y == roads[j].road.back().second) {
                             num++;
                         }
                     }
                     continue;
                 }
-                if (make_pair(nextstate.x, nextstate.y) == roads[j].road[i]) {
+                if (nextstate.x == roads[j].road[i].first && nextstate.y == roads[j].road[i].second) {
                     num++;
                     continue;
                 }
                 if (i > 0) {
-                    if ((make_pair(nextstate.x, nextstate.y) == roads[j].road[i - 1]
-                         && make_pair(nowstate.x, nowstate.y) == roads[j].road[i])) {
+                    if ((nextstate.x == roads[j].road[i - 1].first && nextstate.y == roads[j].road[i - 1].second)
+                        && (nowstate.x == roads[j].road[i].first && nowstate.y == roads[j].road[i].second)) {
                         num++;
                         continue;
                     }
                 } else {
-                    if ((make_pair(nextstate.x, nextstate.y) == RobotPos[j]
-                         && make_pair(nowstate.x, nowstate.y) == roads[j].road[i])) {
+                    if ((nextstate.x == RobotPos[j].first && nextstate.y == RobotPos[j].second)
+                        && (nowstate.x == roads[j].road[i].first && nowstate.y == roads[j].road[i].second)) {
                         num++;
                         continue;
                     }

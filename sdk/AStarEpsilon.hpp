@@ -30,8 +30,8 @@ namespace Robotlib {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
             std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合
-            std::unordered_set<State> close_set;//关闭集合
-            std::unordered_set<Node *> finished_set;//完成集合
+            std::unordered_set<State> close_set(300);//关闭集合
+            std::unordered_set<Node *> finished_set(300);//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
             Node *start_node = new Node(State(start, time), 0,
                                         heuristicToBerth(State(start, time), goal_state, berthid, time), 0,

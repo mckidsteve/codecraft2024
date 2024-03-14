@@ -55,8 +55,8 @@ namespace Robotlib {
                         AllPaths *node = *it;
                         if (node->use || node->infoc)continue;
                         if (node->cost > old_min_f * w && node->cost <= min_f * w) {
-                            focal_set.push(node);
                             node->infoc = true;
+                            focal_set.push(node);
                         }
                     }
                 }
@@ -115,7 +115,7 @@ namespace Robotlib {
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
                                 if (next_node_1->cost <= min_f * w) {
-                                    node->infoc = true;
+                                    next_node_1->infoc = true;
                                     focal_set.push(next_node_1);
                                 }
                                 if (next_node_1->clashs.empty()) {
@@ -161,7 +161,7 @@ namespace Robotlib {
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
                                 if (next_node_2->cost <= min_f * w) {
-                                    node->infoc = true;
+                                    next_node_2->infoc = true;
                                     focal_set.push(next_node_2);
                                 }
                                 if (next_node_2->clashs.empty()) {
@@ -206,7 +206,7 @@ namespace Robotlib {
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
                                 if (next_node_1->cost <= min_f * w) {
-                                    node->infoc = true;
+                                    next_node_1->infoc = true;
                                     focal_set.push(next_node_1);
                                 }
                                 if (next_node_1->clashs.empty()) {
@@ -250,7 +250,7 @@ namespace Robotlib {
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
                                 if (next_node_2->cost <= min_f * w) {
-                                    node->infoc = true;
+                                    next_node_2->infoc = true;
                                     focal_set.push(next_node_2);
                                 }
                                 if (next_node_2->clashs.empty()) {

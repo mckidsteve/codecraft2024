@@ -52,8 +52,8 @@ namespace Robotlib {
                         Node *node = *it;
                         if (node->use || node->infoc)continue;
                         if (node->f > old_min_f * w && node->f <= min_f * w) {
-                            focal_set.push(node);
                             node->infoc = true;
+                            focal_set.push(node);
                         }
                     }
                 }
@@ -91,8 +91,8 @@ namespace Robotlib {
                         open_set.push(next_node);
                         close_set.insert(next_state);
                         if (next_node->f <= min_f * w) {
-                            focal_set.push(next_node);
                             next_node->infoc = true;
+                            focal_set.push(next_node);
                         }
                     } else {
                         delete next_node;

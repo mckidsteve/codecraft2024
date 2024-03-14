@@ -92,12 +92,15 @@ namespace Robotlib {
             }
             //回溯路径
             Node *node = focal_set.top();
-            while (node->parent != nullptr) {
+            if (node == start_node) {
                 path.road.emplace_back(node->state.x, node->state.y);
-                node = node->parent;
+            } else {
+                while (node->parent != nullptr) {
+                    path.road.emplace_back(node->state.x, node->state.y);
+                    node = node->parent;
+                }
             }
             path.min_f = min_f;
-            //反转路径
             std::reverse(path.road.begin(), path.road.end());
             //释放内存
             for (auto it: finished_set) {

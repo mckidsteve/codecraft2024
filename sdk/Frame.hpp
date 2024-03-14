@@ -22,6 +22,11 @@ void PerframeInput() {
 
 // 每帧的更新
 void PerframeUpdate() {
+//    bool f = true;
+//    int count = 0;
+//    while (zhen == 726 && f) {
+//        count = 1;
+//    }
     queue<Cargo> c;
 //    for (int i = 0; i < berth_num; i++) {
 //        log("泊位还有物品个数" + to_string(berths[i].things.size()));
@@ -31,7 +36,7 @@ void PerframeUpdate() {
     for (int i = 0; i < zsize; i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
-        if (cargo.time - zhen > 1000)
+        if (zhen - cargo.time > 1000)
             continue;
         c.push(cargo);
     }
@@ -93,10 +98,11 @@ void PerframeUpdate() {
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].goods == 0 && robots[i].cargo.val != 0 &&
             (robots[i].path.road.size() + zhen - robots[i].cargo.time > 1000)) {
+            log("机器人id:" + to_string(i) + "时间超时");
             robots[i].Reset(false);
         }
     }
-    //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
+    //有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].status == 0)continue;
         if (robots[i].goods == 1 &&
@@ -105,6 +111,9 @@ void PerframeUpdate() {
             ecbs->Search(i, berths[berth_id].x, berths[berth_id].y, zhen, berth_id);
             break;
         }
+    }
+    //没有任务目标的机器人获得新的任务目标
+    for (int i = 0; i < robot_num; i++) {
         if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
             if (RobotFindNewGoal(cargos, robots[i]))
                 break;
@@ -127,6 +136,7 @@ void PerframeOutput() {
             robots[i].path.road.erase(robots[i].path.road.begin());
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
+                log("机器人id:" + to_string(i) + "移动错误");
                 robots[i].Reset(false);
             } else {
                 // 机器人移动
@@ -134,9 +144,11 @@ void PerframeOutput() {
                 if (robots[i].path.road.empty()) {
                     if (robots[i].goods == 0) {
                         // 机器人没有货物,就去拿货物
+                        log("机器人id:" + to_string(i) + "正常取货");
                         robots[i].getThings(next.first, next.second);
                     } else {
                         // 机器人有货物,就去放货物
+                        log("机器人id:" + to_string(i) + "正常放货");
                         robots[i].putThings(next.first, next.second);
                     }
                 }

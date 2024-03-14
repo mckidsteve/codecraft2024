@@ -130,7 +130,10 @@ void Init() {
             }
         }
     }
-    starEpsilon = new AStarEpsilon(game_map, 1.5, berth_dis);
+    ecbs = new ECBS(game_map, 1.5, berth_dis);
+    for (int i = 0; i < robot_num; i++) {
+        ecbs->robots[i] = &robots[i];
+    }
     //输出地图情况
 #ifdef _WIN32
     ofstream mapfile;

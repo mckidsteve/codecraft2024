@@ -7,7 +7,7 @@ void Berth::stowage() {
         return;
     if (things.empty())
         return;
-    // log("第" + to_string(id) + "号泊位向第" + to_string(boatid) + "号船装载货物");
+    // log("第" + to_string(zhen) + "号泊位向第" + to_string(boatid) + "号船装载货物");
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             // pair<int, int> a = things.front();

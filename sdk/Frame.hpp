@@ -2,14 +2,14 @@
 
 // 每帧的输入
 void PerframeInput() {
-    scanf("%d%d", &id, &money);
-    log("第" + to_string(id) + "帧");
+    scanf("%d%d", &zhen, &money);
+    log("第" + to_string(zhen) + "帧");
     int num;
     scanf("%d", &num);
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        new_cargos.emplace_back(x, y, val, id);
+        new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {
         scanf("%d%d%d%d", &robots[i].goods, &robots[i].x, &robots[i].y, &robots[i].status);
@@ -31,7 +31,7 @@ void PerframeUpdate() {
     for (int i = 0; i < zsize; i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
-        if (cargo.time - id > 1000)
+        if (cargo.time - zhen > 1000)
             continue;
         c.push(cargo);
     }
@@ -80,17 +80,11 @@ void PerframeUpdate() {
             cargos.push(cargo);
             continue;
         }
-        Robotlib::Path path = getRoadtoCargo(robots[robot_id].x, robots[robot_id].y, cargo.x, cargo.y);
-        // 如果没有找到路径就把货物重新放入队列
-        if (path.road.empty()) {
-            cargos.push(cargo);
-            continue;
-        }
         // 如果机器人在运输其他货物，就先把货物重新放入队列
         if (robots[robot_id].cargo.val != 0) {
             new_cargos.push_front(robots[robot_id].cargo);
         }
-        robots[robot_id].setGoal(cargo, berth_time, berth_id, path);
+        robots[robot_id].setGoal(cargo, berth_time, berth_id);
         break;
     }
     //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
@@ -99,13 +93,12 @@ void PerframeUpdate() {
         if (robots[i].goods == 1 &&
             robots[i].path.road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
-            robots[i].path = getRoadtoBerth(robots[i].x, robots[i].y, berths[berth_id].x,
-                                            berths[berth_id].y, berth_id);
+            ecbs->Search(i, berths[berth_id].x, berths[berth_id].y, zhen, berth_id);
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
             RobotFindNewGoal(cargos, robots[i]);
         }
-        if (robots[i].cargo.val != 0 && (robots[i].path.road.size() + id - robots[i].cargo.time > 1000)) {
+        if (robots[i].cargo.val != 0 && (robots[i].path.road.size() + zhen - robots[i].cargo.time > 1000)) {
             robots[i].Reset(false);
         }
     }
@@ -113,7 +106,7 @@ void PerframeUpdate() {
 
 // 每帧的输出
 void PerframeOutput() {
-    //    log("第" + to_string(id) + "帧输出");
+    //    log("第" + to_string(zhen) + "帧输出");
     //    for (int i = 0; i < berth_num; i++) {
     //        if (berths[i].things.empty())continue;
     //        log("第" + to_string(i) + "号泊位");
@@ -148,7 +141,7 @@ void PerframeOutput() {
         if (boats[i].status == 0)
             continue;
         if (boats[i].num == boat_capacity || // 当装满的时候直接出发开始运输
-            boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + id > 14950 &&
+            boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + zhen > 14950 &&
             boats[i].num != 0) { // 当时间快到的时候也直接开始运输
             boats[i].go();
             continue;
@@ -180,7 +173,7 @@ void PerframeOutput() {
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatid != -1)
                     continue;
-                if (id + 500 + berths[j].transport_time > 14950)
+                if (zhen + 500 + berths[j].transport_time > 14950)
                     continue;
                 int z = berths[j].things.size();
                 if (z > max) {

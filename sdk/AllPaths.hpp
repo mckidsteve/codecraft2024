@@ -41,7 +41,7 @@ namespace Robotlib {
             int z = roads.size();
             for (int i = 0; i < z; i++) {
                 min_f += roads[i].min_f;
-                cost += roads[i].road.size();
+                if (roads[i].min_f != 0)cost += roads[i].road.size();
             }
         }
 

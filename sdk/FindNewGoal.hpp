@@ -37,5 +37,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         c.push(ca);
     }
     cargos = c;
+    //log("机器人" + to_string(r.id) + "获取空余目标" + to_string(goal.x) + " " + to_string(goal.y) + " " +
+    //to_string(goal.val) + " " + to_string(goal_time) + " " + to_string(goal_id));
     r.setGoal(goal, goal_time, goal_id);
 }

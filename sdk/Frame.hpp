@@ -82,8 +82,10 @@ void PerframeUpdate() {
         }
         // 如果机器人在运输其他货物，就先把货物重新放入队列
         if (robots[robot_id].cargo.val != 0) {
+            //log("机器人id:" + to_string(robot_id) + "将旧目标放回");
             new_cargos.push_front(robots[robot_id].cargo);
         }
+        //log("机器人id:" + to_string(robot_id) + "获取新的目标");
         robots[robot_id].setGoal(cargo, berth_time, berth_id);
         break;
     }

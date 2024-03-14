@@ -26,10 +26,14 @@ namespace Robotlib {
             }
             //初始化搜索路径
             Path path;
+            //log("初始化搜索");
             starEpsilon.SearchToBerth(path, time, make_pair(robots[robot_id]->x, robots[robot_id]->y),
                                       make_pair(end_x, end_y), all_paths->getRobotofConstraint(robot_id), berth_id,
                                       robot_id, all_paths);
+            //log("初始化搜索成功");
+            //log("初始化路径");
             all_paths->ChangePath(robot_id, path);
+            //log("初始化路径成功");
             std::PriorityQueue<AllPaths *, AllPathsPtrComparator> open_set;//开放集合
             std::priority_queue<AllPaths *, std::vector<AllPaths *>, AllPathsCompareNode> focal_set;//焦点集合
             std::unordered_set<AllPaths *> finished_set;//完成集合
@@ -38,9 +42,10 @@ namespace Robotlib {
             finished_set.insert(all_paths);
             double min_f = all_paths->min_f;
             bool flag = false;
-            AllPaths *goal;
+            AllPaths *goal = nullptr;
             int num = 0;
             while (!open_set.empty()) {
+//                log("搜索" + to_string(num));
                 num++;
                 double old_min_f = min_f;
                 min_f = open_set.top()->min_f;
@@ -52,9 +57,10 @@ namespace Robotlib {
                     }
                 }
                 AllPaths *node = focal_set.top();
+//                log("node" + to_string(node->clashs.size()));
 //                bool f = true;
 //                int count = 0;
-//                while (!node->clashs.empty() && f && num > 3) {
+//                while (robot_id == 4 && time == 8 && f) {
 //                    count = 1;
 //                }
                 //判断是否为目标状态
@@ -76,12 +82,13 @@ namespace Robotlib {
                                                               clashRobot.robot_id_1);
                         Path next_path_1;
                         next_robot_id = clashRobot.robot_id_1;
-                        if (clashRobot.robot_id_1 == robot_id) {
-                            next_end_x = end_x;
-                            next_end_y = end_y;
-                            next_berth_id = berth_id;
-                        } else {
-                            if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
+                        if (next_robot_id != -1) {
+                            bool f = false;
+                            if (clashRobot.robot_id_1 == robot_id) {
+                                next_end_x = end_x;
+                                next_end_y = end_y;
+                                next_berth_id = berth_id;
+                            } else if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
                                 next_end_x = robots[next_robot_id]->cargo.x;
                                 next_end_y = robots[next_robot_id]->cargo.y;
                                 next_berth_id = -1;
@@ -92,35 +99,39 @@ namespace Robotlib {
                                         : robots[next_robot_id]->berthid;
                                 next_end_x = berths[next_berth_id].x;
                                 next_end_y = berths[next_berth_id].y;
+                            } else f = true;
+                            if (!f) {
+                                starEpsilon.SearchToBerth(next_path_1, time,
+                                                          make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
+                                                          make_pair(next_end_x, next_end_y),
+                                                          next_node_1->getRobotofConstraint(next_robot_id),
+                                                          next_berth_id, next_robot_id, next_node_1);
+                                next_node_1->ChangePath(next_robot_id, next_path_1);
+                                finished_set.insert(next_node_1);
+                                open_set.push(next_node_1);
+                                if (next_node_1->cost <= min_f * w)
+                                    focal_set.push(next_node_1);
+                                if (next_node_1->clashs.empty()) {
+                                    flag = true;
+                                    goal = next_node_1;
+                                    break;
+                                }
                             }
                         }
-                        starEpsilon.SearchToBerth(next_path_1, time,
-                                                  make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
-                                                  make_pair(next_end_x, next_end_y),
-                                                  next_node_1->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id, next_robot_id, next_node_1);
-                        next_node_1->ChangePath(next_robot_id, next_path_1);
-                        finished_set.insert(next_node_1);
-                        open_set.push(next_node_1);
-                        if (next_node_1->cost <= min_f * w)
-                            focal_set.push(next_node_1);
-                        if (next_node_1->clashs.empty()) {
-                            flag = true;
-                            goal = next_node_1;
-                            break;
-                        }
+
 
                         AllPaths *next_node_2 = new AllPaths(*node);
                         next_node_2->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
                                                               clashRobot.robot_id_2);
                         Path next_path_2;
                         next_robot_id = clashRobot.robot_id_2;
-                        if (clashRobot.robot_id_2 == robot_id) {
-                            next_end_x = end_x;
-                            next_end_y = end_y;
-                            next_berth_id = berth_id;
-                        } else {
-                            if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
+                        if (next_robot_id != -1) {
+                            bool f = false;
+                            if (clashRobot.robot_id_2 == robot_id) {
+                                next_end_x = end_x;
+                                next_end_y = end_y;
+                                next_berth_id = berth_id;
+                            } else if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
                                 next_end_x = robots[next_robot_id]->cargo.x;
                                 next_end_y = robots[next_robot_id]->cargo.y;
                                 next_berth_id = -1;
@@ -131,22 +142,24 @@ namespace Robotlib {
                                         : robots[next_robot_id]->berthid;
                                 next_end_x = berths[next_berth_id].x;
                                 next_end_y = berths[next_berth_id].y;
+                            } else f = true;
+                            if (!f) {
+                                starEpsilon.SearchToBerth(next_path_2, time,
+                                                          make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
+                                                          make_pair(next_end_x, next_end_y),
+                                                          next_node_2->getRobotofConstraint(next_robot_id),
+                                                          next_berth_id, next_robot_id, next_node_2);
+                                next_node_2->ChangePath(next_robot_id, next_path_2);
+                                finished_set.insert(next_node_2);
+                                open_set.push(next_node_2);
+                                if (next_node_2->cost <= min_f * w)
+                                    focal_set.push(next_node_2);
+                                if (next_node_2->clashs.empty()) {
+                                    flag = true;
+                                    goal = next_node_2;
+                                    break;
+                                }
                             }
-                        }
-                        starEpsilon.SearchToBerth(next_path_2, time,
-                                                  make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
-                                                  make_pair(next_end_x, next_end_y),
-                                                  next_node_2->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id, next_robot_id, next_node_2);
-                        next_node_2->ChangePath(next_robot_id, next_path_2);
-                        finished_set.insert(next_node_2);
-                        open_set.push(next_node_2);
-                        if (next_node_2->cost <= min_f * w)
-                            focal_set.push(next_node_2);
-                        if (next_node_2->clashs.empty()) {
-                            flag = true;
-                            goal = next_node_2;
-                            break;
                         }
                     } else {
                         AllPaths *next_node_1 = new AllPaths(*node);
@@ -154,12 +167,13 @@ namespace Robotlib {
                                                               clashRobot.robot_id_1);
                         Path next_path_1;
                         next_robot_id = clashRobot.robot_id_1;
-                        if (clashRobot.robot_id_1 == robot_id) {
-                            next_end_x = end_x;
-                            next_end_y = end_y;
-                            next_berth_id = berth_id;
-                        } else {
-                            if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
+                        if (next_robot_id != -1) {
+                            bool f = false;
+                            if (clashRobot.robot_id_1 == robot_id) {
+                                next_end_x = end_x;
+                                next_end_y = end_y;
+                                next_berth_id = berth_id;
+                            } else if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
                                 next_end_x = robots[next_robot_id]->cargo.x;
                                 next_end_y = robots[next_robot_id]->cargo.y;
                                 next_berth_id = -1;
@@ -170,35 +184,37 @@ namespace Robotlib {
                                         : robots[next_robot_id]->berthid;
                                 next_end_x = berths[next_berth_id].x;
                                 next_end_y = berths[next_berth_id].y;
+                            } else f = true;
+                            if (!f) {
+                                starEpsilon.SearchToBerth(next_path_1, time,
+                                                          make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
+                                                          make_pair(next_end_x, next_end_y),
+                                                          next_node_1->getRobotofConstraint(next_robot_id),
+                                                          next_berth_id, next_robot_id, next_node_1);
+                                next_node_1->ChangePath(next_robot_id, next_path_1);
+                                finished_set.insert(next_node_1);
+                                open_set.push(next_node_1);
+                                if (next_node_1->cost <= min_f * w)
+                                    focal_set.push(next_node_1);
+                                if (next_node_1->clashs.empty()) {
+                                    flag = true;
+                                    goal = next_node_1;
+                                    break;
+                                }
                             }
                         }
-                        starEpsilon.SearchToBerth(next_path_1, time,
-                                                  make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
-                                                  make_pair(next_end_x, next_end_y),
-                                                  next_node_1->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id, next_robot_id, next_node_1);
-                        next_node_1->ChangePath(next_robot_id, next_path_1);
-                        finished_set.insert(next_node_1);
-                        open_set.push(next_node_1);
-                        if (next_node_1->cost <= min_f * w)
-                            focal_set.push(next_node_1);
-                        if (next_node_1->clashs.empty()) {
-                            flag = true;
-                            goal = next_node_1;
-                            break;
-                        }
-
                         AllPaths *next_node_2 = new AllPaths(*node);
                         next_node_2->constraints.emplace_back(clashRobot.x2, clashRobot.y2, clashRobot.time,
                                                               clashRobot.robot_id_2);
                         Path next_path_2;
                         next_robot_id = clashRobot.robot_id_2;
-                        if (clashRobot.robot_id_2 == robot_id) {
-                            next_end_x = end_x;
-                            next_end_y = end_y;
-                            next_berth_id = berth_id;
-                        } else {
-                            if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
+                        if (next_robot_id != -1) {
+                            bool f = false;
+                            if (clashRobot.robot_id_2 == robot_id) {
+                                next_end_x = end_x;
+                                next_end_y = end_y;
+                                next_berth_id = berth_id;
+                            } else if (robots[next_robot_id]->cargo.val != 0 && robots[next_robot_id]->goods == 0) {
                                 next_end_x = robots[next_robot_id]->cargo.x;
                                 next_end_y = robots[next_robot_id]->cargo.y;
                                 next_berth_id = -1;
@@ -209,22 +225,24 @@ namespace Robotlib {
                                         : robots[next_robot_id]->berthid;
                                 next_end_x = berths[next_berth_id].x;
                                 next_end_y = berths[next_berth_id].y;
+                            } else f = true;
+                            if (!f) {
+                                starEpsilon.SearchToBerth(next_path_2, time,
+                                                          make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
+                                                          make_pair(next_end_x, next_end_y),
+                                                          next_node_2->getRobotofConstraint(next_robot_id),
+                                                          next_berth_id, next_robot_id, next_node_2);
+                                next_node_2->ChangePath(next_robot_id, next_path_2);
+                                finished_set.insert(next_node_2);
+                                open_set.push(next_node_2);
+                                if (next_node_2->cost <= min_f * w)
+                                    focal_set.push(next_node_2);
+                                if (next_node_2->clashs.empty()) {
+                                    flag = true;
+                                    goal = next_node_2;
+                                    break;
+                                }
                             }
-                        }
-                        starEpsilon.SearchToBerth(next_path_2, time,
-                                                  make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
-                                                  make_pair(next_end_x, next_end_y),
-                                                  next_node_2->getRobotofConstraint(next_robot_id),
-                                                  next_berth_id, next_robot_id, next_node_2);
-                        next_node_2->ChangePath(next_robot_id, next_path_2);
-                        finished_set.insert(next_node_2);
-                        open_set.push(next_node_2);
-                        if (next_node_2->cost <= min_f * w)
-                            focal_set.push(next_node_2);
-                        if (next_node_2->clashs.empty()) {
-                            flag = true;
-                            goal = next_node_2;
-                            break;
                         }
                     }
                 }
@@ -234,9 +252,10 @@ namespace Robotlib {
             if (!flag) {
                 return;
             }
-            log("ECBS成功" + to_string(num));
+            //log("ECBS成功" + to_string(num));
             for (int i = 0; i < robot_num; i++) {
                 robots[i]->path = goal->roads[i];
+                //log("机器人" + to_string(i) + "路径长度" + to_string(goal->roads[i].road.size()));
             }
         }
 

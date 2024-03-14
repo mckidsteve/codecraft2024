@@ -55,6 +55,15 @@ namespace Robotlib {
                 ClashRobot &clash = clashs[i];
                 int nexttime = clash.time - time;
                 if (robot_id != clash.robot_id_1 && robot_id != clash.robot_id_2)continue;
+                if (robot_id == clash.robot_id_1 && clash.robot_id_2 == -1) {
+                    if (roads[clash.robot_id_1].road.size() < nexttime) {
+                        finish[i] = true;
+                    } else if (clash.dian &&
+                               roads[clash.robot_id_1].road[nexttime - 1] != make_pair(clash.x, clash.y)) {
+                        finish[i] = true;
+                    }
+                    continue;
+                }
                 if (roads[clash.robot_id_1].road.size() < nexttime || roads[clash.robot_id_2].road.size() < nexttime) {
                     finish[i] = true;
                     continue;
@@ -84,21 +93,22 @@ namespace Robotlib {
                     clashs.erase(clashs.begin() + i);  // 删除满足条件的元素
                 }
             }
-            //log("清理过时冲突成功");
-            //添加新的冲突
-            //机器人不动的情况下的冲突待解决
-            //
-            //
-            //
-//            log("搜索新的冲突");
-//            for (int i = 0; i < robot_num; i++) {
-//                log("路径" + to_string(i) + "的长度" + to_string(roads[i].road.size()));
-//            }
             int road_size = path.road.size();
             for (int j = 0; j < robot_num; j++) {
                 if (j == robot_id)continue;
                 for (int i = 0; i < road_size; i++) {
-                    if (roads[j].road.size() <= i)break;
+                    if (roads[j].road.size() <= i) {
+                        if (roads[j].road.empty()) {
+                            if (roads[robot_id].road[i] == RobotPos[j]) {
+                                clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                            }
+                        } else {
+                            if (roads[robot_id].road[i] == roads[j].road.back()) {
+                                clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, -1);
+                            }
+                        }
+                        continue;
+                    }
                     if (roads[robot_id].road[i] == roads[j].road[i]) {
                         clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, j);
                         continue;
@@ -130,7 +140,18 @@ namespace Robotlib {
             int i = nextstate.time - basetime - 1;
             for (int j = 0; j < robot_num; j++) {
                 if (j == robot_id)continue;
-                if (roads[j].road.size() <= i)continue;
+                if (roads[j].road.size() <= i) {
+                    if (roads[j].road.empty()) {
+                        if (make_pair(nextstate.x, nextstate.y) == RobotPos[j]) {
+                            num++;
+                        }
+                    } else {
+                        if (make_pair(nextstate.x, nextstate.y) == roads[j].road.back()) {
+                            num++;
+                        }
+                    }
+                    continue;
+                }
                 if (make_pair(nextstate.x, nextstate.y) == roads[j].road[i]) {
                     num++;
                     continue;

@@ -37,24 +37,35 @@ namespace Robotlib {
                                         heuristicToBerth(State(start, time), goal_state, berthid, time), 0,
                                         nullptr);
             open_set.push(start_node);
+            start_node->infoc = true;
             focal_set.push(start_node);
             finished_set.insert(start_node);
             close_set.insert(start_node->state);
             double min_f = start_node->f;
             bool flag = false;
+            bool flag_first = true;
             while (!open_set.empty()) {
                 double old_min_f = min_f;
                 min_f = open_set.top()->f;
                 if (min_f > old_min_f) {
                     for (auto it = open_set.begin(); it != open_set.end(); ++it) {
                         Node *node = *it;
-                        if (node->f > old_min_f * w && node->f <= min_f * w)
+                        if (node->use || node->infoc)continue;
+                        if (node->f > old_min_f * w && node->f <= min_f * w) {
                             focal_set.push(node);
+                            node->infoc = true;
+                        }
                     }
                 }
                 Node *node = focal_set.top();
                 //判断是否为目标状态
-                if (node->isGoalToBerth(goal, berthid)) {
+                if (flag_first) {
+                    if (obstacles.count(State(node->state.x, node->state.y, node->state.time + 1)) == 0 &&
+                        node->isGoalToBerth(goal, berthid)) {
+                        flag = true;
+                        break;
+                    }
+                } else if (node->isGoalToBerth(goal, berthid)) {
                     flag = true;
                     break;
                 }
@@ -79,13 +90,16 @@ namespace Robotlib {
                         finished_set.insert(next_node);
                         open_set.push(next_node);
                         close_set.insert(next_state);
-                        if (next_node->f <= min_f * w)
+                        if (next_node->f <= min_f * w) {
                             focal_set.push(next_node);
+                            next_node->infoc = true;
+                        }
                     } else {
                         delete next_node;
                     }
                 }
                 while (!open_set.empty() && open_set.top()->use)open_set.pop();
+                flag_first = false;
             }
             if (!flag) {
                 return false;
@@ -122,6 +136,7 @@ namespace Robotlib {
             double f;//f值, f = g + h
             int clash{};//冲突次数
             bool use{};//是否使用
+            bool infoc{};//是否在焦点集合中
             Node *parent;//父节点
             //构造函数
             Node(State state, double g, double h, int clash, Node *p) : state(state), g(g), h(h), f(g + h),

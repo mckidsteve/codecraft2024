@@ -33,6 +33,7 @@ namespace Robotlib {
             //log("初始化搜索成功");
             //log("初始化路径");
             all_paths->ChangePath(robot_id, path);
+            all_paths->infoc = true;
             //log("初始化路径成功");
             std::PriorityQueue<AllPaths *, AllPathsPtrComparator> open_set;//开放集合
             std::priority_queue<AllPaths *, std::vector<AllPaths *>, AllPathsCompareNode> focal_set;//焦点集合
@@ -52,8 +53,11 @@ namespace Robotlib {
                 if (min_f > old_min_f) {
                     for (auto it = open_set.begin(); it != open_set.end(); ++it) {
                         AllPaths *node = *it;
-                        if (node->cost > old_min_f * w && node->cost <= min_f * w)
+                        if (node->use || node->infoc)continue;
+                        if (node->cost > old_min_f * w && node->cost <= min_f * w) {
                             focal_set.push(node);
+                            node->infoc = true;
+                        }
                     }
                 }
                 AllPaths *node = focal_set.top();
@@ -80,6 +84,7 @@ namespace Robotlib {
                         AllPaths *next_node_1 = new AllPaths(*node);
                         next_node_1->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
                                                               clashRobot.robot_id_1);
+                        next_node_1->infoc = next_node_1->use = false;
                         Path next_path_1;
                         next_robot_id = clashRobot.robot_id_1;
                         if (next_robot_id != -1) {
@@ -109,8 +114,10 @@ namespace Robotlib {
                                 next_node_1->ChangePath(next_robot_id, next_path_1);
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
-                                if (next_node_1->cost <= min_f * w)
+                                if (next_node_1->cost <= min_f * w) {
+                                    node->infoc = true;
                                     focal_set.push(next_node_1);
+                                }
                                 if (next_node_1->clashs.empty()) {
                                     flag = true;
                                     goal = next_node_1;
@@ -123,6 +130,7 @@ namespace Robotlib {
                         AllPaths *next_node_2 = new AllPaths(*node);
                         next_node_2->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
                                                               clashRobot.robot_id_2);
+                        next_node_2->infoc = next_node_2->use = false;
                         Path next_path_2;
                         next_robot_id = clashRobot.robot_id_2;
                         if (next_robot_id != -1) {
@@ -152,8 +160,10 @@ namespace Robotlib {
                                 next_node_2->ChangePath(next_robot_id, next_path_2);
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
-                                if (next_node_2->cost <= min_f * w)
+                                if (next_node_2->cost <= min_f * w) {
+                                    node->infoc = true;
                                     focal_set.push(next_node_2);
+                                }
                                 if (next_node_2->clashs.empty()) {
                                     flag = true;
                                     goal = next_node_2;
@@ -165,6 +175,7 @@ namespace Robotlib {
                         AllPaths *next_node_1 = new AllPaths(*node);
                         next_node_1->constraints.emplace_back(clashRobot.x, clashRobot.y, clashRobot.time,
                                                               clashRobot.robot_id_1);
+                        next_node_1->infoc = next_node_1->use = false;
                         Path next_path_1;
                         next_robot_id = clashRobot.robot_id_1;
                         if (next_robot_id != -1) {
@@ -194,8 +205,10 @@ namespace Robotlib {
                                 next_node_1->ChangePath(next_robot_id, next_path_1);
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
-                                if (next_node_1->cost <= min_f * w)
+                                if (next_node_1->cost <= min_f * w) {
+                                    node->infoc = true;
                                     focal_set.push(next_node_1);
+                                }
                                 if (next_node_1->clashs.empty()) {
                                     flag = true;
                                     goal = next_node_1;
@@ -206,6 +219,7 @@ namespace Robotlib {
                         AllPaths *next_node_2 = new AllPaths(*node);
                         next_node_2->constraints.emplace_back(clashRobot.x2, clashRobot.y2, clashRobot.time,
                                                               clashRobot.robot_id_2);
+                        next_node_2->infoc = next_node_2->use = false;
                         Path next_path_2;
                         next_robot_id = clashRobot.robot_id_2;
                         if (next_robot_id != -1) {
@@ -235,8 +249,10 @@ namespace Robotlib {
                                 next_node_2->ChangePath(next_robot_id, next_path_2);
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
-                                if (next_node_2->cost <= min_f * w)
+                                if (next_node_2->cost <= min_f * w) {
+                                    node->infoc = true;
                                     focal_set.push(next_node_2);
+                                }
                                 if (next_node_2->clashs.empty()) {
                                     flag = true;
                                     goal = next_node_2;

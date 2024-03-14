@@ -16,7 +16,7 @@ void Robot::putThings(int x, int y) {
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
-    log("机器人id:" + to_string(id) + "物品放置");
+    //log("机器人id:" + to_string(id) + "物品放置");
     this->Reset(true);
 }
 

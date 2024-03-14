@@ -15,6 +15,7 @@ namespace Robotlib {
         double min_f{};//min_f总价
         int time{};
         bool use{};
+        bool infoc{};
 
         explicit AllPaths(int time) : time(time) {};
 
@@ -97,8 +98,10 @@ namespace Robotlib {
             for (int j = 0; j < robot_num; j++) {
                 if (j == robot_id)continue;
                 for (int i = 0; i < road_size; i++) {
-                    if (roads[j].road.size() <= i) {
-                        if (roads[j].road.empty()) {
+                    unsigned long long int size1 = roads[j].road.size();
+                    if (size1 <= i) {
+                        if (i - size1 > 20)break;
+                        if (size1 == 0) {
                             if (roads[robot_id].road[i] == RobotPos[j]) {
                                 clashs.emplace_back(roads[robot_id].road[i], time + i + 1, robot_id, -1);
                             }
@@ -140,7 +143,9 @@ namespace Robotlib {
             int i = nextstate.time - basetime - 1;
             for (int j = 0; j < robot_num; j++) {
                 if (j == robot_id)continue;
-                if (roads[j].road.size() <= i) {
+                unsigned long long int size1 = roads[j].road.size();
+                if (size1 <= i) {
+                    if (i - size1 > 20)continue;
                     if (roads[j].road.empty()) {
                         if (nextstate.x == RobotPos[j].first && nextstate.y == RobotPos[j].second) {
                             num++;

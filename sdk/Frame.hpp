@@ -24,7 +24,7 @@ void PerframeInput() {
 void PerframeUpdate() {
 //    bool f = true;
 //    int count = 0;
-//    while (zhen == 726 && f) {
+//    while (zhen == 98 && f) {
 //        count = 1;
 //    }
     queue<Cargo> c;
@@ -98,7 +98,7 @@ void PerframeUpdate() {
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].goods == 0 && robots[i].cargo.val != 0 &&
             (robots[i].path.road.size() + zhen - robots[i].cargo.time > 1000)) {
-            log("机器人id:" + to_string(i) + "时间超时");
+            //log("机器人id:" + to_string(i) + "时间超时");
             robots[i].Reset(false);
         }
     }
@@ -119,6 +119,12 @@ void PerframeUpdate() {
                 break;
         }
     }
+    //没有任务目标的机器人原地搜索避免碰撞
+    for (int i = 0; i < robot_num; i++) {
+        if (robots[i].path.road.empty()) {
+            ecbs->Search(i, robots[i].x, robots[i].y, zhen, -1);
+        }
+    }
 }
 
 // 每帧的输出
@@ -136,7 +142,7 @@ void PerframeOutput() {
             robots[i].path.road.erase(robots[i].path.road.begin());
             int dis = abs(robots[i].x - next.first) + abs(robots[i].y - next.second);
             if (dis > 1) {
-                log("机器人id:" + to_string(i) + "移动错误");
+                //log("机器人id:" + to_string(i) + "移动错误");
                 robots[i].Reset(false);
             } else {
                 // 机器人移动
@@ -144,11 +150,11 @@ void PerframeOutput() {
                 if (robots[i].path.road.empty()) {
                     if (robots[i].goods == 0) {
                         // 机器人没有货物,就去拿货物
-                        log("机器人id:" + to_string(i) + "正常取货");
+                        //log("机器人id:" + to_string(i) + "正常取货");
                         robots[i].getThings(next.first, next.second);
                     } else {
                         // 机器人有货物,就去放货物
-                        log("机器人id:" + to_string(i) + "正常放货");
+                        //log("机器人id:" + to_string(i) + "正常放货");
                         robots[i].putThings(next.first, next.second);
                     }
                 }

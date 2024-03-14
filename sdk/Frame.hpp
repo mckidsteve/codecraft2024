@@ -89,6 +89,13 @@ void PerframeUpdate() {
         robots[robot_id].setGoal(cargo, berth_time, berth_id);
         break;
     }
+    // 如果机器人携带的货物时间超过1000帧就重新获取新的任务目标
+    for (int i = 0; i < robot_num; i++) {
+        if (robots[i].goods == 0 && robots[i].cargo.val != 0 &&
+            (robots[i].path.road.size() + zhen - robots[i].cargo.time > 1000)) {
+            robots[i].Reset(false);
+        }
+    }
     //没有任务目标的机器人获得新的任务目标,有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].status == 0)continue;
@@ -96,12 +103,11 @@ void PerframeUpdate() {
             robots[i].path.road.empty()) {
             int berth_id = RobottoBerth(robots[i]);
             ecbs->Search(i, berths[berth_id].x, berths[berth_id].y, zhen, berth_id);
+            break;
         }
         if (robots[i].cargo.val == 0 && robots[i].goods == 0 && !cargos.empty()) {
-            RobotFindNewGoal(cargos, robots[i]);
-        }
-        if (robots[i].cargo.val != 0 && (robots[i].path.road.size() + zhen - robots[i].cargo.time > 1000)) {
-            robots[i].Reset(false);
+            if (RobotFindNewGoal(cargos, robots[i]))
+                break;
         }
     }
 }

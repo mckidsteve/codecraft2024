@@ -23,8 +23,8 @@ void Init() {
         int id;
         scanf("%d", &id);
         scanf("%d%d%d%d", &berths[id].x, &berths[id].y, &berths[id].transport_time, &berths[id].loading_speed);
-        log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
-            to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
+//        log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
+//            to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
         berths[id].id = id;
         for (int j = 0; j < 4; j++) {
             for (int k = 0; k < 4; k++) {

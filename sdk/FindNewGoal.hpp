@@ -2,7 +2,7 @@
 
 #include "Path.hpp"
 
-void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
+bool RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
     int goal_id;
     double goal_time;
@@ -26,7 +26,7 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         }
     }
     if (max_value <= 0)
-        return;
+        return false;
     // 删除被拿走的物品
     queue<Cargo> c;
     while (!cargos.empty()) {
@@ -40,4 +40,5 @@ void RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     //log("机器人" + to_string(r.id) + "获取空余目标" + to_string(goal.x) + " " + to_string(goal.y) + " " +
     //to_string(goal.val) + " " + to_string(goal_time) + " " + to_string(goal_id));
     r.setGoal(goal, goal_time, goal_id);
+    return true;
 }

@@ -24,7 +24,7 @@ void PerframeInput() {
 void PerframeUpdate() {
 //    bool f = true;
 //    int count = 0;
-//    while (zhen == 98 && f) {
+//    while (zhen == 5 && f) {
 //        count = 1;
 //    }
     queue<Cargo> c;
@@ -125,6 +125,9 @@ void PerframeUpdate() {
             ecbs->Search(i, robots[i].x, robots[i].y, zhen, -1);
         }
     }
+//    for (int i = 0; i < robot_num; i++) {
+//        log("机器人" + to_string(i) + "路径长度" + to_string(robots[i].path.road.size()));
+//    }
 }
 
 // 每帧的输出
@@ -174,7 +177,7 @@ void PerframeOutput() {
         } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatid != -1)
+                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
                     continue;
                 int z = berths[j].things.size();
                 if (z > max) {
@@ -184,7 +187,7 @@ void PerframeOutput() {
             }
             if (goal == -1) {
                 for (int j = 0; j < berth_num; j++) {
-                    if (berths[j].boatid == -1) {
+                    if (berths[j].boatids.empty()) {
                         goal = j;
                         break;
                     }
@@ -197,7 +200,7 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatid != -1)
+                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
                     continue;
                 if (zhen + 500 + berths[j].transport_time > 14950)
                     continue;
@@ -212,6 +215,11 @@ void PerframeOutput() {
     }
     for (int i = 0; i < berth_num; i++) {
         berths[i].stowage();
+    }
+    if (zhen == 15000) {
+        for (int i = 0; i < berth_num; i++) {
+            log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
+        }
     }
     puts("OK");
     fflush(stdout);

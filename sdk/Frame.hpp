@@ -27,7 +27,7 @@ void PerframeUpdate() {
 //    while (zhen == 5 && f) {
 //        count = 1;
 //    }
-    queue<Cargo> c;
+    queue <Cargo> c;
 //    for (int i = 0; i < berth_num; i++) {
 //        log("泊位还有物品个数" + to_string(berths[i].things.size()));
 //    }
@@ -140,6 +140,7 @@ void PerframeOutput() {
     //        log("第" + to_string(i) + "号泊位");
     //        log("物品数量:" + to_string(berths[i].things.size()));
     //    }
+    free_boats = 0;
     for (int i = 0; i < robot_num; i++) {
         // 如果机器人路径不为空就继续走
         if (!robots[i].path.road.empty()) {
@@ -212,7 +213,8 @@ void PerframeOutput() {
                     goal = j;
                 }
             }
-            boats[i].ship(goal);
+            if (goal != -1)boats[i].ship(goal);
+            else free_boats++;
         }
     }
     for (int i = 0; i < berth_num; i++) {

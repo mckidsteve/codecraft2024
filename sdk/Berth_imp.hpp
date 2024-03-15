@@ -19,7 +19,9 @@ void Berth::stowage() {
     }
 }
 
-double Berth::transport_time_value() {
+double Berth::transport_time_value() const {
+//    return (1 * (boat_num - free_boats) / boat_num + 1) * (boat_capacity - ((int) things.size() % boat_capacity)) /
+//           boat_capacity * transport_time / boat_capacity;
     return 0;
 //    return transport_time * 1.0 * (boat_capacity - ((int) things.size() % boat_capacity)) / boat_capacity;
 //    return transport_time;

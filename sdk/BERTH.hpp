@@ -21,5 +21,5 @@ public:
     void stowage();
 
     // 装船时间造成的价值
-    double transport_time_value();
+    double transport_time_value() const;
 };

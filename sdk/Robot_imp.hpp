@@ -4,7 +4,7 @@
 
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
-    ecbs->Search(id, berths[berthid].x, berths[berthid].y, zhen, berthid);
+    //ecbs->Search(id, berths[berthid].x, berths[berthid].y, zhen, berthid);
 }
 
 void Robot::putThings(int x, int y) {
@@ -16,6 +16,7 @@ void Robot::putThings(int x, int y) {
     int pos_y = y - berths[num].y;
     pair<int, int> pair1(pos_x, pos_y);
     berths[num].things.push(pair1);
+    //log("机器人id:" + to_string(id) + "物品放置");
     this->Reset(true);
 }
 
@@ -40,12 +41,14 @@ void Robot::Reset(bool complete) {
 }
 
 void Robot::setGoal(Cargo c, double dis, int brenth_id) {
-    //    log("机器人id:" + to_string(zhen));
+//    log("机器人id:" + to_string(zhen));
+//    log("机器人设置目标");
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));
     //    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
     cargotoberth = dis;
     berthid = brenth_id;
+    path.clear();
     ecbs->Search(id, cargo.x, cargo.y, zhen, -1);
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 void Berth::stowage() {
-    if (boatid == -1)
+    if (boatids.empty())
         return;
+    int boatid = boatids.front();
     if (boats[boatid].status == 0)
         return;
     if (things.empty())
@@ -23,4 +24,6 @@ double Berth::transport_time_value() {
         return 0;
     else
         return (10 - boat_capacity) * 0.1 * transport_time;
+//    return transport_time * 1.0 * (boat_capacity - ((int) things.size() % boat_capacity)) / boat_capacity;
+//    return transport_time;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 class Berth {
 public:
     int x{};                      // 泊位的x
@@ -8,7 +10,7 @@ public:
     int transport_time{};         // 到达虚拟点的时间
     int loading_speed{};          // 装货速度
     queue<pair<int, int>> things; // 泊位上的物品,储存的是相对坐标
-    int boatid{-1};               // 停靠或者准备停靠的船只编号
+    std::list<int> boatids;            // 停靠或者准备停靠的船只编号
 
     Berth() = default;
 

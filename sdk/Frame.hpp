@@ -177,7 +177,7 @@ void PerframeOutput() {
         } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
+                if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
                 int z = berths[j].things.size();
                 if (z > max) {
@@ -200,7 +200,7 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
+                if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
                 if (zhen + 500 + berths[j].transport_time > 14950)
                     continue;
@@ -219,6 +219,9 @@ void PerframeOutput() {
     if (zhen == 15000) {
         for (int i = 0; i < berth_num; i++) {
             log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
+        }
+        for (int i = 0; i < boat_num; i++) {
+            log("船只" + to_string(i) + "的货物" + to_string(boats[i].num));
         }
     }
     puts("OK");

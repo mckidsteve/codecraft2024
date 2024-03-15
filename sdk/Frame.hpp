@@ -66,6 +66,7 @@ void PerframeUpdate() {
             if (robots[i].goods == 1)continue;
             //如果机器人到不了对应的泊位
             if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
+            if (berth_dis[robots[i].x][robots[i].y][berth_id] > berth_dis[cargo.x][cargo.y][berth_id])continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
             if (robot_time == MAXNUM)
                 continue;
@@ -75,10 +76,16 @@ void PerframeUpdate() {
                     max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
                              berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
                              berths[robots[i].berthid].transport_time_value());
+//            if (robot_value > value)
+//                continue;
+//            if (value - robot_value > max_value) {
+//                max_value = value - robot_value;
+//                robot_id = i;
+//            }
             if (robot_value > value)
                 continue;
-            if (value - robot_value > max_value) {
-                max_value = value - robot_value;
+            if (value > max_value) {
+                max_value = value;
                 robot_id = i;
             }
         }

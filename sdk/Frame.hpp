@@ -27,7 +27,7 @@ void PerframeUpdate() {
 //    while (zhen == 5 && f) {
 //        count = 1;
 //    }
-    queue <Cargo> c;
+    queue<Cargo> c;
 //    for (int i = 0; i < berth_num; i++) {
 //        log("泊位还有物品个数" + to_string(berths[i].things.size()));
 //    }
@@ -182,9 +182,18 @@ void PerframeOutput() {
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
-                int z = berths[j].things.size();
-                if (z > max) {
-                    max = z;
+                int z = 0;
+                for (int k = 0; k < berths[j].boatids.size(); k++) {
+                    z += (boat_capacity - boats[berths[j].boatids[k]].num);
+                }
+                int val = 0;
+                int empty_size = boat_capacity - boats[i].num;
+                int min1 = min(z + empty_size, (int) berths[j].things.size());
+                for (int k = z; k < min1; k++) {
+                    val += berths[j].things[k].val;
+                }
+                if (val > max) {
+                    max = val;
                     goal = j;
                 }
             }
@@ -207,9 +216,18 @@ void PerframeOutput() {
                     continue;
                 if (zhen + 500 + berths[j].transport_time > 14950)
                     continue;
-                int z = berths[j].things.size();
-                if (z > max) {
-                    max = z;
+                int z = 0;
+                for (int k = 0; k < berths[j].boatids.size(); k++) {
+                    z += (boat_capacity - boats[berths[j].boatids[k]].num);
+                }
+                int val = 0;
+                int empty_size = boat_capacity - boats[i].num;
+                int min1 = min(z + empty_size, (int) berths[j].things.size());
+                for (int k = z; k < min1; k++) {
+                    val += berths[j].things[k].val;
+                }
+                if (val > max) {
+                    max = val;
                     goal = j;
                 }
             }

@@ -9,8 +9,8 @@ public:
     int id{};                     // 泊位的编号
     int transport_time{};         // 到达虚拟点的时间
     int loading_speed{};          // 装货速度
-    queue<pair<int, int>> things; // 泊位上的物品,储存的是相对坐标
-    std::list<int> boatids;            // 停靠或者准备停靠的船只编号
+    vector<Cargo> things; // 泊位上的物品,储存的是相对坐标
+    vector<int> boatids;            // 停靠或者准备停靠的船只编号
 
     Berth() = default;
 

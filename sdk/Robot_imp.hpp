@@ -12,10 +12,10 @@ void Robot::putThings(int x, int y) {
     int num = game_map[x][y] - '0';
     if (num < 0 || num >= berth_num)
         return;
-    int pos_x = x - berths[num].x;
-    int pos_y = y - berths[num].y;
-    pair<int, int> pair1(pos_x, pos_y);
-    berths[num].things.push(pair1);
+//    int pos_x = x - berths[num].x;
+//    int pos_y = y - berths[num].y;
+//    pair<int, int> pair1(pos_x, pos_y);
+    berths[num].things.push_back(cargo);
     //log("机器人id:" + to_string(id) + "物品放置");
     this->Reset(true);
 }

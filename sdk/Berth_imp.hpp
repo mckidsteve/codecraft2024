@@ -12,7 +12,7 @@ void Berth::stowage() {
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             // pair<int, int> a = things.front();
-            things.pop();
+            things.erase(things.begin());
             boats[boatid].num++;
         } else
             return;

@@ -24,7 +24,7 @@ void PerframeInput() {
 void PerframeUpdate() {
 //    bool f = true;
 //    int count = 0;
-//    while (zhen == 5 && f) {
+//    while (zhen == 2987 && f) {
 //        count = 1;
 //    }
     queue<Cargo> c;
@@ -131,6 +131,7 @@ void PerframeUpdate() {
     //没有任务目标的机器人原地搜索避免碰撞
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].path.road.empty()) {
+            robots[i].cargo = Cargo(robots[i].x, robots[i].y, 0, zhen);
             ecbs->Search(i, robots[i].x, robots[i].y, zhen, -1);
         }
     }

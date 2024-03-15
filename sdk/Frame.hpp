@@ -72,7 +72,9 @@ void PerframeUpdate() {
             double value = cargo.val * 1.0 / (berth_time + robot_time);
             double robot_value =
                     robots[i].cargo.val * 1.0 /
-                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
+                             berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
+                             berths[robots[i].berthid].transport_time_value());
             if (robot_value > value)
                 continue;
             if (value - robot_value > max_value) {
@@ -91,7 +93,7 @@ void PerframeUpdate() {
             new_cargos.push_front(robots[robot_id].cargo);
         }
         //log("机器人id:" + to_string(robot_id) + "获取新的目标");
-        robots[robot_id].setGoal(cargo, berth_time, berth_id);
+        robots[robot_id].setGoal(cargo, berth_id);
         break;
     }
     // 如果机器人携带的货物时间超过1000帧就重新获取新的任务目标

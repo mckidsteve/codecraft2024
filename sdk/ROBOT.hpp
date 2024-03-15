@@ -10,7 +10,6 @@ public:
     int x{}, y{};          // 机器人的x，y坐标
     int status{};          // 机器人是否处于运行状态
     int id{};              // 机器人的编号
-    double cargotoberth{}; // 机器人携带的货物到泊位的距离
     int berthid{-1};
     Cargo cargo{default_cargo}; // 机器人的货物
     //vector<pair<int, int>> road;
@@ -30,7 +29,7 @@ public:
     void putThings(int x, int y);
 
     // 设置机器人要拿取什么物品
-    void setGoal(Cargo c, double dis, int brenth_id);
+    void setGoal(Cargo c, int brenth_id);
 
     // 机器人移动
     void move(int x, int y);

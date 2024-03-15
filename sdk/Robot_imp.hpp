@@ -33,21 +33,19 @@ void Robot::move(int x, int y) {
 
 void Robot::Reset(bool complete) {
     path.clear();
-    cargotoberth = 0;
     berthid = -1;
     if (!complete && goods == 0)
         cargos.push(cargo);
     cargo = default_cargo;
 }
 
-void Robot::setGoal(Cargo c, double dis, int brenth_id) {
+void Robot::setGoal(Cargo c, int brenth_id) {
 //    log("机器人id:" + to_string(zhen));
 //    log("机器人设置目标");
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));
     //    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
     cargo = c;
-    cargotoberth = dis;
     berthid = brenth_id;
     path.clear();
     ecbs->Search(id, cargo.x, cargo.y, zhen, -1);

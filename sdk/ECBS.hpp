@@ -6,9 +6,11 @@
 namespace Robotlib {
     class ECBS {
     public:
-        ECBS(const std::vector<std::vector<char>> &map, double w, std::vector<std::vector<std::vector<int>>> &berth_dis)
-                : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis),
-                  starEpsilon(AStarEpsilon(map, w, berth_dis)) {};
+        ECBS(const std::vector<std::vector<char>> &map, double w, std::vector<std::vector<std::vector<int>>> &berth_dis,
+             std::vector<std::vector<std::vector<int>>> &random_dis)
+                : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis), random_dis(random_dis),
+                  random_bfs_point(random_dis[0][0].size()),
+                  starEpsilon(AStarEpsilon(map, w, berth_dis, random_dis)) {};
         Robot *robots[robot_num]{};
 
         //机器人需要有自己的目标cargo或者Berth
@@ -19,6 +21,7 @@ namespace Robotlib {
 //            log(" end_x:" + to_string(end_x) + " end_y:" + to_string(end_y));
 //            log(" time:" + to_string(time) + " berth_id:" + to_string(berth_id));
             if (!robots[robot_id]->path.road.empty())return;
+            int near_point = getNearPoint(end_x, end_y);
             AllPaths *all_paths = new AllPaths(time);
             for (int i = 0; i < robot_num; i++) {
                 all_paths->roads.push_back(robots[i]->path);
@@ -29,7 +32,7 @@ namespace Robotlib {
             //log("初始化搜索");
             starEpsilon.SearchToBerth(path, time, make_pair(robots[robot_id]->x, robots[robot_id]->y),
                                       make_pair(end_x, end_y), all_paths->getRobotofConstraint(robot_id), berth_id,
-                                      robot_id, all_paths);
+                                      robot_id, all_paths, near_point);
             //log("初始化搜索成功");
             //log("初始化路径");
             all_paths->ChangePath(robot_id, path);
@@ -109,7 +112,8 @@ namespace Robotlib {
                                                           make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                           make_pair(next_end_x, next_end_y),
                                                           next_node_1->getRobotofConstraint(next_robot_id),
-                                                          next_berth_id, next_robot_id, next_node_1);
+                                                          next_berth_id, next_robot_id, next_node_1,
+                                                          getNearPoint(next_end_x, next_end_y));
                                 next_node_1->ChangePath(next_robot_id, next_path_1);
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
@@ -155,7 +159,8 @@ namespace Robotlib {
                                                           make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                           make_pair(next_end_x, next_end_y),
                                                           next_node_2->getRobotofConstraint(next_robot_id),
-                                                          next_berth_id, next_robot_id, next_node_2);
+                                                          next_berth_id, next_robot_id, next_node_2,
+                                                          getNearPoint(next_end_x, next_end_y));
                                 next_node_2->ChangePath(next_robot_id, next_path_2);
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
@@ -200,7 +205,8 @@ namespace Robotlib {
                                                           make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                           make_pair(next_end_x, next_end_y),
                                                           next_node_1->getRobotofConstraint(next_robot_id),
-                                                          next_berth_id, next_robot_id, next_node_1);
+                                                          next_berth_id, next_robot_id, next_node_1,
+                                                          getNearPoint(next_end_x, next_end_y));
                                 next_node_1->ChangePath(next_robot_id, next_path_1);
                                 finished_set.insert(next_node_1);
                                 open_set.push(next_node_1);
@@ -244,7 +250,8 @@ namespace Robotlib {
                                                           make_pair(robots[next_robot_id]->x, robots[next_robot_id]->y),
                                                           make_pair(next_end_x, next_end_y),
                                                           next_node_2->getRobotofConstraint(next_robot_id),
-                                                          next_berth_id, next_robot_id, next_node_2);
+                                                          next_berth_id, next_robot_id, next_node_2,
+                                                          getNearPoint(next_end_x, next_end_y));
                                 next_node_2->ChangePath(next_robot_id, next_path_2);
                                 finished_set.insert(next_node_2);
                                 open_set.push(next_node_2);
@@ -277,10 +284,12 @@ namespace Robotlib {
     private:
         double w;//次优性范围
         int n;//地图大小
+        int random_bfs_point;//随机点数量
         AStarEpsilon starEpsilon;//A*算法
         //机器人
         std::vector<std::vector<char>> map_;//地图
         std::vector<std::vector<std::vector<int>>> berth_dis;//泊位距离
+        std::vector<std::vector<std::vector<int>>> random_dis;//随机点距离
         //节点指针比较函数
         struct AllPathsPtrComparator {
             bool operator()(const AllPaths *a, const AllPaths *b) const {
@@ -294,6 +303,18 @@ namespace Robotlib {
                 return lhs->clashs.size() > rhs->clashs.size();
             }
         };
+
+        int getNearPoint(int x, int y) {
+            int near_point = -1, near_dis = 0x3f3f3f3f;
+            for (int i = 0; i < random_bfs_point; i++) {
+                if (random_dis[x][y][i] == -1)continue;
+                if (random_dis[x][y][i] < near_dis) {
+                    near_dis = random_dis[x][y][i];
+                    near_point = i;
+                }
+            }
+            return near_point;
+        }
     };
 
 }

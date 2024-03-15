@@ -20,21 +20,23 @@ namespace Robotlib {
     class AStarEpsilon {
     public:
         AStarEpsilon(const std::vector<std::vector<char>> &map, double w,
-                     std::vector<std::vector<std::vector<int>>> &berth_dis)
-                : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis) {}
+                     std::vector<std::vector<std::vector<int>>> &berth_dis,
+                     std::vector<std::vector<std::vector<int>>> &random_dis)
+                : map_(map), w(w), n((int) map.size()), berth_dis(berth_dis), random_dis(random_dis) {}
 
         bool
         SearchToBerth(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
-                      const unordered_set<State> &obstacles, int berthid, int robot_id, AllPaths *allPaths) {
+                      const unordered_set<State> &obstacles, int berthid, int robot_id, AllPaths *allPaths,
+                      int near_point) {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
             std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合
-            std::unordered_set<State> close_set(300);//关闭集合
-            std::unordered_set<Node *> finished_set(300);//完成集合
+            std::unordered_set<State> close_set(5000);//关闭集合
+            std::unordered_set<Node *> finished_set(5000);//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
             Node *start_node = new Node(State(start, time), 0,
-                                        heuristicToBerth(State(start, time), goal_state, berthid, time), 0,
+                                        heuristicToBerth(State(start, time), goal_state, berthid, near_point, time), 0,
                                         nullptr);
             open_set.push(start_node);
             start_node->infoc = true;
@@ -84,7 +86,7 @@ namespace Robotlib {
                     State next_state(nextx, nexty, nexttime);
                     int clash = node->clash + allPaths->ClashTime(robot_id, node->state, next_state, time);
                     double g = node->g + 1;
-                    double h = heuristicToBerth(next_state, goal_state, berthid, time);
+                    double h = heuristicToBerth(next_state, goal_state, berthid, near_point, time);
                     Node *next_node = new Node(next_state, g, h, clash, node);
                     if (close_set.count(next_state) == 0) {
                         finished_set.insert(next_node);
@@ -128,6 +130,7 @@ namespace Robotlib {
         int n;//地图大小
         std::vector<std::vector<char>> map_;//地图
         std::vector<std::vector<std::vector<int>>> berth_dis;//泊位距离
+        std::vector<std::vector<std::vector<int>>> random_dis;//随机点距离
         //节点
         struct Node {
             State state;//状态
@@ -182,14 +185,17 @@ namespace Robotlib {
         };
 
         //启发函数
-        int heuristicToCargo(const State &a, const State &b, const int basetime) {
-            return abs(a.x - b.x) + abs(a.y - b.y);
+        int heuristicToCargo(const State &a, const State &b, int next_point, const int basetime) {
+            if (next_point == -1)return abs(a.x - b.x) + abs(a.y - b.y);
+            if (random_dis[a.x][a.y][next_point] <= random_dis[b.x][b.y][next_point])
+                return abs(a.x - b.x) + abs(a.y - b.y);
+            else return random_dis[a.x][a.y][next_point] + random_dis[b.x][b.y][next_point];
             //return abs(a.x - b.x) + abs(a.y - b.y) + a.time - basetime;
         }
 
         //启发函数
-        int heuristicToBerth(const State &a, const State &b, int berthid, const int basetime) {
-            if (berthid == -1)return heuristicToCargo(a, b, basetime);
+        int heuristicToBerth(const State &a, const State &b, int berthid, int next_point, const int basetime) {
+            if (berthid == -1)return heuristicToCargo(a, b, next_point, basetime);
             return berth_dis[a.x][a.y][berthid];
             //return berth_dis[a.x][a.y][berthid] + a.time - basetime;
         }

@@ -59,7 +59,10 @@ namespace Robotlib {
             for (auto it = clashs.begin(); it != clashs.end();) {
                 ClashRobot clash = *it;
                 int nexttime = clash.time - time;
-                if (robot_id != clash.robot_id_1 && robot_id != clash.robot_id_2)continue;
+                if (robot_id != clash.robot_id_1 && robot_id != clash.robot_id_2) {
+                    it++;
+                    continue;
+                }
                 if (robot_id == clash.robot_id_1 && clash.robot_id_2 == -1) {
                     if (roads[clash.robot_id_1].road.size() < nexttime) {
                         it = clashs.erase(it);

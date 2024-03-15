@@ -66,10 +66,13 @@ namespace Robotlib {
                 if (robot_id == clash.robot_id_1 && clash.robot_id_2 == -1) {
                     if (roads[clash.robot_id_1].road.size() < nexttime) {
                         it = clashs.erase(it);
+                        continue;
                     } else if (clash.dian &&
                                roads[clash.robot_id_1].road[nexttime - 1] != make_pair(clash.x, clash.y)) {
                         it = clashs.erase(it);
+                        continue;
                     }
+                    it++;
                     continue;
                 }
                 if (roads[clash.robot_id_1].road.size() < nexttime || roads[clash.robot_id_2].road.size() < nexttime) {

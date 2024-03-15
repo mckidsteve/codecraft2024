@@ -24,7 +24,7 @@ void PerframeInput() {
 void PerframeUpdate() {
 //    bool f = true;
 //    int count = 0;
-//    while (zhen == 31 && f) {
+//    while (zhen == 98 && f) {
 //        count = 1;
 //    }
     queue<Cargo> c;

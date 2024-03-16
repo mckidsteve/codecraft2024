@@ -5,7 +5,6 @@
 bool RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     double max_value = 0;
     int goal_id;
-    double goal_time;
     Cargo goal = default_cargo;
     for (int i = 0; i < cargos.size(); i++) {
         Cargo cargo = cars.front();
@@ -22,7 +21,6 @@ bool RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
             max_value = value;
             goal = cargo;
             goal_id = berth_id;
-            goal_time = berth_time;
         }
     }
     if (max_value <= 0)
@@ -39,6 +37,6 @@ bool RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
     cargos = c;
     //log("机器人" + to_string(r.id) + "获取空余目标" + to_string(goal.x) + " " + to_string(goal.y) + " " +
     //to_string(goal.val) + " " + to_string(goal_time) + " " + to_string(goal_id));
-    r.setGoal(goal, goal_time, goal_id);
+    r.setGoal(goal, goal_id);
     return true;
 }

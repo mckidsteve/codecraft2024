@@ -24,7 +24,7 @@ void PerframeInput() {
 void PerframeUpdate() {
 //    bool f = true;
 //    int count = 0;
-//    while (zhen == 5 && f) {
+//    while (zhen == 1 && f) {
 //        count = 1;
 //    }
     queue<Cargo> c;
@@ -66,17 +66,26 @@ void PerframeUpdate() {
             if (robots[i].goods == 1)continue;
             //如果机器人到不了对应的泊位
             if (berth_dis[robots[i].x][robots[i].y][berth_id] == -1)continue;
+            if (berth_dis[robots[i].x][robots[i].y][berth_id] > berth_dis[cargo.x][cargo.y][berth_id])continue;
             int robot_time = CargotoRobot(cargo, robots[i]);
             if (robot_time == MAXNUM)
                 continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
-            double robot_value =
-                    robots[i].cargo.val * 1.0 /
-                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) + robots[i].cargotoberth);
+            double robot_value = robots[i].berthid != -1 ?
+                                 robots[i].cargo.val * 1.0 /
+                                 max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
+                                          berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
+                                          berths[robots[i].berthid].transport_time_value()) : 0;
+//            if (robot_value > value)
+//                continue;
+//            if (value - robot_value > max_value) {
+//                max_value = value - robot_value;
+//                robot_id = i;
+//            }
             if (robot_value > value)
                 continue;
-            if (value - robot_value > max_value) {
-                max_value = value - robot_value;
+            if (value > max_value) {
+                max_value = value;
                 robot_id = i;
             }
         }
@@ -91,7 +100,7 @@ void PerframeUpdate() {
             new_cargos.push_front(robots[robot_id].cargo);
         }
         //log("机器人id:" + to_string(robot_id) + "获取新的目标");
-        robots[robot_id].setGoal(cargo, berth_time, berth_id);
+        robots[robot_id].setGoal(cargo, berth_id);
         break;
     }
     // 如果机器人携带的货物时间超过1000帧就重新获取新的任务目标
@@ -122,6 +131,7 @@ void PerframeUpdate() {
     //没有任务目标的机器人原地搜索避免碰撞
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].path.road.empty()) {
+            robots[i].cargo = Cargo(robots[i].x, robots[i].y, 0, zhen);
             ecbs->Search(i, robots[i].x, robots[i].y, zhen, -1);
         }
     }
@@ -138,6 +148,7 @@ void PerframeOutput() {
     //        log("第" + to_string(i) + "号泊位");
     //        log("物品数量:" + to_string(berths[i].things.size()));
     //    }
+    free_boats = 0;
     for (int i = 0; i < robot_num; i++) {
         // 如果机器人路径不为空就继续走
         if (!robots[i].path.road.empty()) {
@@ -177,11 +188,20 @@ void PerframeOutput() {
         } else if (boats[i].berthid == -1) {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
+                if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
-                int z = berths[j].things.size();
-                if (z > max) {
-                    max = z;
+                int z = 0;
+                for (int k = 0; k < berths[j].boatids.size(); k++) {
+                    z += (boat_capacity - boats[berths[j].boatids[k]].num);
+                }
+                int val = 0;
+                int empty_size = boat_capacity - boats[i].num;
+                int min1 = min(z + empty_size, (int) berths[j].things.size());
+                for (int k = z; k < min1; k++) {
+                    val += berths[j].things[k].val;
+                }
+                if (val > max) {
+                    max = val;
                     goal = j;
                 }
             }
@@ -200,17 +220,27 @@ void PerframeOutput() {
         } else {
             int max = 0, goal = -1;
             for (int j = 0; j < berth_num; j++) {
-                if (berths[j].boatids.size() >= berths[j].things.size() / boat_capacity)
+                if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
                 if (zhen + 500 + berths[j].transport_time > 14950)
                     continue;
-                int z = berths[j].things.size();
-                if (z > max) {
-                    max = z;
+                int z = 0;
+                for (int k = 0; k < berths[j].boatids.size(); k++) {
+                    z += (boat_capacity - boats[berths[j].boatids[k]].num);
+                }
+                int val = 0;
+                int empty_size = boat_capacity - boats[i].num;
+                int min1 = min(z + empty_size, (int) berths[j].things.size());
+                for (int k = z; k < min1; k++) {
+                    val += berths[j].things[k].val;
+                }
+                if (val > max) {
+                    max = val;
                     goal = j;
                 }
             }
-            boats[i].ship(goal);
+            if (goal != -1)boats[i].ship(goal);
+            else free_boats++;
         }
     }
     for (int i = 0; i < berth_num; i++) {
@@ -219,6 +249,9 @@ void PerframeOutput() {
     if (zhen == 15000) {
         for (int i = 0; i < berth_num; i++) {
             log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
+        }
+        for (int i = 0; i < boat_num; i++) {
+            log("船只" + to_string(i) + "的货物" + to_string(boats[i].num));
         }
     }
     puts("OK");

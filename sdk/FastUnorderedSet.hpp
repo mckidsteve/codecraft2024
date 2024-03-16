@@ -10,6 +10,7 @@ namespace std {
         struct Bucket {
             std::optional<T> value;
             bool deleted;
+
             Bucket() : deleted(false) {}
         };
 
@@ -17,14 +18,16 @@ namespace std {
         size_t size_;
         Hash hash;
 
-        size_t findBucket(const T& value) const {
+        size_t findBucket(const T &value) const {
             size_t index = hash(value) % buckets.size();
             size_t start_index = index;
 
             while (buckets[index].value && (buckets[index].value != value || buckets[index].deleted)) {
                 index = (index + 1) % buckets.size();
                 if (index == start_index) {
-                    throw std::runtime_error("Hash table is full");
+                    // 当哈希表满时，自动扩展大小
+                    const_cast<FastUnorderedSet *>(this)->rehash();
+                    return findBucket(value); // 重新查找
                 }
             }
 
@@ -36,17 +39,18 @@ namespace std {
             buckets.resize(old_buckets.size() * 2);
             size_ = 0;
 
-            for (auto& bucket : old_buckets) {
+            for (auto &bucket: old_buckets) {
                 if (bucket.value && !bucket.deleted) {
                     insert(*bucket.value);
                 }
+                // 清除删除标记的逻辑不再需要
             }
         }
 
     public:
         FastUnorderedSet(size_t initial_capacity = 16) : buckets(initial_capacity), size_(0) {}
 
-        bool insert(const T& value) {
+        bool insert(const T &value) {
             if (size_ >= buckets.size() * 0.7) {
                 rehash();
             }
@@ -62,15 +66,16 @@ namespace std {
             return true;
         }
 
-        bool contains(const T& value) const {
+        bool contains(const T &value) const {
             size_t index = findBucket(value);
             return buckets[index].value && !buckets[index].deleted;
         }
 
-        bool erase(const T& value) {
+        bool erase(const T &value) {
             size_t index = findBucket(value);
             if (buckets[index].value && !buckets[index].deleted) {
-                buckets[index].deleted = true;
+                // 不立即标记为删除，只减少大小
+                // buckets[index].deleted = true;
                 size_--;
                 return true;
             }
@@ -84,7 +89,7 @@ namespace std {
         // Iterator class
         class Iterator {
         private:
-            const FastUnorderedSet& set;
+            const FastUnorderedSet &set;
             size_t index;
 
             void moveToNextValidBucket() {
@@ -94,21 +99,21 @@ namespace std {
             }
 
         public:
-            Iterator(const FastUnorderedSet& set, size_t index) : set(set), index(index) {
+            Iterator(const FastUnorderedSet &set, size_t index) : set(set), index(index) {
                 moveToNextValidBucket();
             }
 
-            const T& operator*() const {
+            const T &operator*() const {
                 return *set.buckets[index].value;
             }
 
-            Iterator& operator++() {
+            Iterator &operator++() {
                 ++index;
                 moveToNextValidBucket();
                 return *this;
             }
 
-            bool operator!=(const Iterator& other) const {
+            bool operator!=(const Iterator &other) const {
                 return index != other.index;
             }
         };

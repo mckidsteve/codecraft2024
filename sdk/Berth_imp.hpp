@@ -12,18 +12,23 @@ void Berth::stowage() {
     for (int i = 0; i < loading_speed; i++) {
         if (boats[boatid].num < boat_capacity && !things.empty()) {
             // pair<int, int> a = things.front();
-            things.pop();
+            things.erase(things.begin());
             boats[boatid].num++;
         } else
             return;
     }
 }
 
-double Berth::transport_time_value() {
-    if (boat_capacity >= 10)
-        return 0;
-    else
-        return (10 - boat_capacity) * 0.1 * transport_time;
+double Berth::transport_time_value() const {
+//    int z = 0;
+//    for (int boatid: boatids) {
+//        z += (boat_capacity - boats[boatid].num);
+//    }
+//    double empty = (boat_capacity - (max((int) things.size() - z, 0) % boat_capacity)) * 1.0 / boat_capacity;
+//    return 5 * empty * transport_time / boat_capacity;
+//    return (1 * (boat_num - free_boats) / boat_num + 1) * (boat_capacity - ((int) things.size() % boat_capacity)) /
+//           boat_capacity * transport_time / boat_capacity;
+    return 0;
 //    return transport_time * 1.0 * (boat_capacity - ((int) things.size() % boat_capacity)) / boat_capacity;
-//    return transport_time;
+//    return transport_time * 1.0 / boat_capacity;
 }

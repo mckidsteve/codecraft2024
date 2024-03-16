@@ -12,6 +12,7 @@ const int random_bfs_point = 100;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限
 int free_boats = boat_num;    // 空闲船只
+bool unuse[berth_num]{false};        // 泊位是否不启用
 /**
  * 地图
  * .空地
@@ -76,6 +77,12 @@ ECBS *ecbs;
 int main() {
     LogInit();
     Init();
+    for (int i = 0; i < berth_num; i++) {
+        unuse[i] = false;
+    }
+    unuse[0] = true;
+    unuse[1] = true;
+    unuse[4] = true;
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();

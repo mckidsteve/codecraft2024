@@ -5,6 +5,7 @@ int RobottoBerth(Robot &r) {
     double min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
+        if (unuse[i])continue;
         if (berth_dis[r.x][r.y][i] == -1)
             continue;
         double time = berth_dis[r.x][r.y][i] + berths[i].transport_time_value();
@@ -21,6 +22,7 @@ int CargotoBerth(Cargo &c) {
     double min_time = MAXNUM;
     int min_id = -1;
     for (int i = 0; i < berth_num; i++) {
+        if (unuse[i])continue;
         if (berth_dis[c.x][c.y][i] == -1)
             continue;
         double time = berth_dis[c.x][c.y][i] + berths[i].transport_time_value();

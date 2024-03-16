@@ -22,11 +22,11 @@ void PerframeInput() {
 
 // 每帧的更新
 void PerframeUpdate() {
-//    bool f = true;
-//    int count = 0;
-//    while (zhen == 176 && f) {
-//        count = 1;
-//    }
+    bool f = true;
+    int count = 0;
+    while (zhen == 1 && f) {
+        count = 1;
+    }
     queue<Cargo> c;
 //    for (int i = 0; i < berth_num; i++) {
 //        log("泊位还有物品个数" + to_string(berths[i].things.size()));
@@ -71,11 +71,11 @@ void PerframeUpdate() {
             if (robot_time == MAXNUM)
                 continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
-            double robot_value =
-                    robots[i].cargo.val * 1.0 /
-                    max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
-                             berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
-                             berths[robots[i].berthid].transport_time_value());
+            double robot_value = robots[i].berthid != -1 ?
+                                 robots[i].cargo.val * 1.0 /
+                                 max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
+                                          berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
+                                          berths[robots[i].berthid].transport_time_value()) : 0;
 //            if (robot_value > value)
 //                continue;
 //            if (value - robot_value > max_value) {

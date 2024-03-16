@@ -58,6 +58,8 @@ namespace Robotlib {
                             focal_set.push(node);
                         }
                     }
+                } else if (min_f < old_min_f) {
+                    min_f = old_min_f;
                 }
                 Node *node = focal_set.top();
                 //判断是否为目标状态
@@ -180,7 +182,8 @@ namespace Robotlib {
             bool operator()(const Node *lhs, const Node *rhs) const {
                 if (lhs->clash != rhs->clash)
                     return lhs->clash > rhs->clash;
-                else return lhs->f > rhs->f;
+                else if (lhs->f != rhs->f)return lhs->f > rhs->f;
+                else return lhs->state.time > rhs->state.time;
             }
         };
 

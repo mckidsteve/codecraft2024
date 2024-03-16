@@ -25,9 +25,7 @@ double Berth::transport_time_value() const {
 //        z += (boat_capacity - boats[boatid].num);
 //    }
 //    double empty = (boat_capacity - (max((int) things.size() - z, 0) % boat_capacity)) * 1.0 / boat_capacity;
-//    return 5 * empty
-//
-//    * transport_time / boat_capacity;
+//    return 5 * empty * transport_time / boat_capacity;
 //    return (1 * (boat_num - free_boats) / boat_num + 1) * (boat_capacity - ((int) things.size() % boat_capacity)) /
 //           boat_capacity * transport_time / boat_capacity;
     return 0;

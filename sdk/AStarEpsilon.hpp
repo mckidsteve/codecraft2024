@@ -9,6 +9,7 @@
 #include "Queue.hpp"
 #include "Path.hpp"
 #include "log.hpp"
+#include "FastUnorderedSet.hpp"
 
 namespace Robotlib {
     /**
@@ -32,13 +33,11 @@ namespace Robotlib {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
             std::priority_queue<Node *, std::vector<Node *>, CompareNode> focal_set;//焦点集合
-            std::unordered_set<State> close_set(5000);//关闭集合
-            std::unordered_set<Node *> finished_set(5000);//完成集合
+            std::FastUnorderedSet<State> close_set(5000);//关闭集合
+            std::FastUnorderedSet<Node *> finished_set(5000);//完成集合
             State goal_state(goal.first, goal.second, 0x3f3f3f3f);
-            unsigned long long int limit_size = obstacles.size();
             Node *start_node = new Node(State(start, time), 0,
                                         heuristicToBerth(State(start, time), goal_state, berthid, near_point, time), 0,
-                                        limit_size,
                                         nullptr);
             open_set.push(start_node);
             start_node->infoc = true;
@@ -91,8 +90,8 @@ namespace Robotlib {
                     int clash = node->clash + allPaths->ClashTime(robot_id, node->state, next_state, time);
                     double g = node->g + 1;
                     double h = heuristicToBerth(next_state, goal_state, berthid, near_point, time);
-                    Node *next_node = new Node(next_state, g, h, clash, limit_size, node);
-                    if (close_set.count(next_state) == 0) {
+                    Node *next_node = new Node(next_state, g, h, clash, node);
+                    if (!close_set.contains(next_state)) {
                         finished_set.insert(next_node);
                         open_set.push(next_node);
                         close_set.insert(next_state);
@@ -142,15 +141,12 @@ namespace Robotlib {
             double h;//h值
             double f;//f值, f = g + h
             int clash{};//冲突次数
-            int limit{};//限制
             bool use{};//是否使用
             bool infoc{};//是否在焦点集合中
             Node *parent;//父节点
             //构造函数
-            Node(State state, double g, double h, int clash, int limit, Node *p) : state(state), g(g), h(h),
-                                                                                   f(g + h + clash * limit),
-                                                                                   clash(clash), limit(limit),
-                                                                                   parent(p) {}
+            Node(State state, double g, double h, int clash, Node *p) : state(state), g(g), h(h), f(g + h),
+                                                                        clash(clash), parent(p) {}
 
             //判断是否为目标状态
             bool isGoalToCargo(const pair<int, int> &goal) const {

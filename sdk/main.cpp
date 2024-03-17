@@ -81,8 +81,9 @@ int main() {
         unuse[i] = false;
     }
     unuse[0] = true;
-    unuse[1] = true;
-    unuse[4] = true;
+    unuse[3] = true;
+    unuse[5] = true;
+    unuse[7] = true;
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();

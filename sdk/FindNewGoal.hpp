@@ -17,6 +17,9 @@ bool RobotFindNewGoal(queue<Cargo> cars, Robot &r) {
         if (robot_time == MAXNUM)
             continue;
         double value = cargo.val * 1.0 / (berth_time + robot_time);
+        if (cargo.val > 150) {
+            value *= 1.5;
+        }
         if (value > max_value) {
             max_value = value;
             goal = cargo;

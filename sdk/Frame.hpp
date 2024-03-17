@@ -9,6 +9,7 @@ void PerframeInput() {
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
+//        if (val < 100)continue;
         new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {
@@ -71,11 +72,17 @@ void PerframeUpdate() {
             if (robot_time == MAXNUM)
                 continue;
             double value = cargo.val * 1.0 / (berth_time + robot_time);
+            if (cargo.val > 150) {
+                value *= 1.5;
+            }
             double robot_value = robots[i].berthid != -1 ?
                                  robots[i].cargo.val * 1.0 /
                                  max(1.0, CargotoRobot(robots[i].cargo, robots[i]) +
                                           berth_dis[robots[i].cargo.x][robots[i].cargo.y][robots[i].berthid] +
                                           berths[robots[i].berthid].transport_time_value()) : 0;
+            if (robots[i].cargo.val > 150) {
+                robot_value *= 1.5;
+            }
 //            if (robot_value > value)
 //                continue;
 //            if (value - robot_value > max_value) {

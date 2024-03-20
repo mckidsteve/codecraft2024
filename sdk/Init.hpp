@@ -32,6 +32,17 @@ void Init() {
             }
         }
     }
+    for (int i = 0; i < berth_num; i++) {
+        int min = MAXNUM, min_id = -1;
+        for (int j = 0; j < berth_num; j++) {
+            if (berths[j].speed_id != 0)continue;
+            if (berths[j].transport_time < min) {
+                min = berths[j].transport_time;
+                min_id = j;
+            }
+        }
+        berths[min_id].speed_id = i + 1;
+    }
     scanf("%d", &boat_capacity);
     char okk[100];
     scanf("%s", okk);

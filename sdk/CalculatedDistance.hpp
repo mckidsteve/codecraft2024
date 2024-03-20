@@ -23,6 +23,7 @@ int CargotoBerth(Cargo &c) {
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[c.x][c.y][i] == -1)
             continue;
+        //if (berths[i].things.size() >= boat_capacity)continue;
         double time = berth_dis[c.x][c.y][i] + berths[i].transport_time_value();
         if (time < min_time) {
             min_time = time;

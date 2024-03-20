@@ -203,6 +203,7 @@ void PerframeOutput() {
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;
                 }
+                if (z + empty_size < berths[j].things.size() && berths[j].speed_id <= 5)val *= 1.5;
                 if (val > max) {
                     max = val;
                     goal = j;
@@ -238,6 +239,7 @@ void PerframeOutput() {
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;
                 }
+                if (z + empty_size < berths[j].things.size() && berths[j].speed_id <= 5)val *= 1.5;
                 if (val > max) {
                     max = val;
                     goal = j;

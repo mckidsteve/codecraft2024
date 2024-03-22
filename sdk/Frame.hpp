@@ -118,7 +118,7 @@ void PerframeUpdate() {
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].status == 0)continue;
         if (robots[i].goods == 1 && robots[i].path.road.empty()) {
-            int berth_id = RobottoBerthOfValue(robots[i]);
+            int berth_id = RobottoBerth(robots[i]);
             ecbs->Search(i, berths[berth_id].x, berths[berth_id].y, zhen, berth_id);
             break;
         }

@@ -5,7 +5,7 @@
 void ChangeCargo(int x, int y, int val, bool f) {
     if (val > 100) {
         for (int j = 0; j < berth_num; j++) {
-            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 50)continue;
+            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 100)continue;
             if (f) {
                 berths[j].cargo_dis += berth_dis[x][y][j] * 2;
                 berths[j].carge_value += val;

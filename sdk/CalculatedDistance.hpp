@@ -23,7 +23,7 @@ int RobottoBerthOfValue(Robot &r) {
     for (int i = 0; i < berth_num; i++) {
         if (berth_dis[r.x][r.y][i] == -1) continue;
         double val = (r.cargo.val + berths[i].carge_value) /
-                     (berth_dis[r.x][r.y][i] + berths[i].transport_time_value() + berths[i].cargo_dis);
+                     max(1.0, berth_dis[r.x][r.y][i] + berths[i].transport_time_value() + berths[i].cargo_dis);
         if (val > max_val) {
             max_val = val;
             max_id = i;

@@ -11,6 +11,8 @@ public:
     int loading_speed{};          // 装货速度
     vector<Cargo> things; // 泊位上的物品,储存的是相对坐标
     vector<int> boatids;            // 停靠或者准备停靠的船只编号
+    int cargo_dis{};              // 泊位附近的货物距离
+    int carge_value{};            // 泊位附近的货物价值
 
     Berth() = default;
 

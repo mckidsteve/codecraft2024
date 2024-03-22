@@ -9,9 +9,7 @@ void PerframeInput() {
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-//        if (zhen > 4000 && val < 100)continue;
-//        if (val < 100)continue;
-//        if (first && val < 150)continue;
+        ChangeCargo(x, y, val, true);
         new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {
@@ -39,8 +37,10 @@ void PerframeUpdate() {
     for (int i = 0; i < zsize; i++) {
         Cargo cargo = cargos.front();
         cargos.pop();
-        if (zhen - cargo.time > 1000)
+        if (zhen - cargo.time > 1000) {
+            ChangeCargo(cargo.x, cargo.y, cargo.val, false);
             continue;
+        }
         c.push(cargo);
     }
     cargos = c;
@@ -117,9 +117,8 @@ void PerframeUpdate() {
     //有目标但是失败的机器人重新获取新的泊位
     for (int i = 0; i < robot_num; i++) {
         if (robots[i].status == 0)continue;
-        if (robots[i].goods == 1 &&
-            robots[i].path.road.empty()) {
-            int berth_id = RobottoBerth(robots[i]);
+        if (robots[i].goods == 1 && robots[i].path.road.empty()) {
+            int berth_id = RobottoBerthOfValue(robots[i]);
             ecbs->Search(i, berths[berth_id].x, berths[berth_id].y, zhen, berth_id);
             break;
         }
@@ -260,7 +259,9 @@ void PerframeOutput() {
     }
 //    if (zhen == 15000) {
     for (int i = 0; i < berth_num; i++) {
-        log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
+        log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()) + "船只数量" +
+            to_string(berths[i].boatids.size()) + "货物平均价值" +
+            to_string(berths[i].carge_value * 1.0 / berths[i].cargo_dis));
     }
     for (int i = 0; i < boat_num; i++) {
         log("船只" + to_string(i) + "的货物" + to_string(boats[i].num) + "在泊位" + to_string(boats[i].berthid));

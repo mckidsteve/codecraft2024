@@ -16,6 +16,22 @@ int RobottoBerth(Robot &r) {
     return min_id;
 }
 
+// 机器人到泊位的距离
+int RobottoBerthOfValue(Robot &r) {
+    double max_val = -1;
+    int max_id = -1;
+    for (int i = 0; i < berth_num; i++) {
+        if (berth_dis[r.x][r.y][i] == -1) continue;
+        double val = (r.cargo.val + berths[i].carge_value) /
+                     (berth_dis[r.x][r.y][i] + berths[i].transport_time_value() + berths[i].cargo_dis);
+        if (val > max_val) {
+            max_val = val;
+            max_id = i;
+        }
+    }
+    return max_id;
+}
+
 // 货物到泊位的距离
 int CargotoBerth(Cargo &c) {
     double min_time = MAXNUM;

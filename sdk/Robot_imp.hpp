@@ -2,6 +2,21 @@
 
 #include "ROBOT.hpp"
 
+void ChangeCargo(int x, int y, int val, bool f) {
+    if (val > 100) {
+        for (int j = 0; j < berth_num; j++) {
+            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 50)continue;
+            if (f) {
+                berths[j].cargo_dis += berth_dis[x][y][j] * 2;
+                berths[j].carge_value += val;
+            } else {
+                berths[j].cargo_dis -= berth_dis[x][y][j] * 2;
+                berths[j].carge_value -= val;
+            }
+        }
+    }
+}
+
 void Robot::getThings(int x, int y) {
     printf("get %d\n", id);
     //ecbs->Search(id, berths[berthid].x, berths[berthid].y, zhen, berthid);
@@ -45,7 +60,11 @@ void Robot::setGoal(Cargo c, int brenth_id) {
     //    log("新物品的x坐标:" + to_string(c.x));
     //    log("新物品的y坐标:" + to_string(c.y));
     //    log("新物品的平均价值:" + to_string(c.val * 1.0 / (r.size() + dis)));
+    if (cargo.val != 0) {
+        ChangeCargo(cargo.x, cargo.y, cargo.val, true);
+    }
     cargo = c;
+    ChangeCargo(c.x, c.y, c.val, false);
     berthid = brenth_id;
     path.clear();
     ecbs->Search(id, cargo.x, cargo.y, zhen, -1);

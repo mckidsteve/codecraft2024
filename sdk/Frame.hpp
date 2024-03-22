@@ -11,7 +11,7 @@ void PerframeInput() {
         scanf("%d%d%d", &x, &y, &val);
 //        if (zhen > 4000 && val < 100)continue;
         if (val < 100)continue;
-        if (zhen > 4000 && val < 150)continue;
+        if (first && val < 150)continue;
         new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {

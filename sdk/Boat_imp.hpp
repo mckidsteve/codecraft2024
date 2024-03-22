@@ -3,6 +3,7 @@
 void Boat::go() {
     //log("第" + to_string(zhen) + "号船开向虚拟点");
     printf("go %d\n", id);
+    first = true;
     if (berthid != -1) {
         //删除id
         for (auto it = berths[berthid].boatids.begin(); it != berths[berthid].boatids.end(); it++) {

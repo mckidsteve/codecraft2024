@@ -9,6 +9,7 @@ const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
 const int random_bfs_point = 100;
+bool first = false;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限
 int free_boats = boat_num;    // 空闲船只

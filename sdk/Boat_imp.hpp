@@ -16,6 +16,7 @@ void Boat::go() {
     num = 0;
     berthid = -1;
     status = 0;
+    val = 0;
 }
 
 void Boat::ship(int goal) {

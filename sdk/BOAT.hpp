@@ -7,6 +7,8 @@ public:
     int berthid{}; // 停泊的泊位
     int status{};  // 船的状态
     int id{};      // 船的id
+    int val{};
+
     Boat() {}
 
     void go();

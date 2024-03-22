@@ -189,7 +189,8 @@ void PerframeOutput() {
             boats[i].go();
             continue;
         } else if (boats[i].berthid == -1) {
-            int max = 0, goal = -1;
+            double max = 0;
+            int goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
@@ -197,12 +198,13 @@ void PerframeOutput() {
                 for (int k = 0; k < berths[j].boatids.size(); k++) {
                     z += (boat_capacity - boats[berths[j].boatids[k]].num);
                 }
-                int val = 0;
+                double val = 0;
                 int empty_size = boat_capacity - boats[i].num;
                 int min1 = min(z + empty_size, (int) berths[j].things.size());
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;
                 }
+                val /= berths[j].transport_time;
                 if (val > max) {
                     max = val;
                     goal = j;
@@ -221,7 +223,8 @@ void PerframeOutput() {
         } else if (!berths[boats[i].berthid].things.empty()) {
             continue;
         } else {
-            int max = 0, goal = -1;
+            double max = 0;
+            int goal = -1;
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
@@ -231,20 +234,23 @@ void PerframeOutput() {
                 for (int k = 0; k < berths[j].boatids.size(); k++) {
                     z += (boat_capacity - boats[berths[j].boatids[k]].num);
                 }
-                int val = 0;
+                double val = 0;
                 int empty_size = boat_capacity - boats[i].num;
                 //if (berths[j].things.size() - z < empty_size)continue;
                 int min1 = min(z + empty_size, (int) berths[j].things.size());
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;
                 }
-                if (val > max) {
-                    max = val;
+                double base = boats[i].val * 1.0 / berths[boats[i].berthid].transport_time;
+                double now = (val + boats[i].val) / (berths[j].transport_time + 500);
+                if (base > now)continue;
+                if (now > max) {
+                    max = now;
                     goal = j;
                 }
             }
             if (goal != -1)boats[i].ship(goal);
-            else free_boats++;
+            else boats[i].go();
         }
     }
     for (int i = 0; i < berth_num; i++) {

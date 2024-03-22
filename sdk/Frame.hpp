@@ -9,6 +9,9 @@ void PerframeInput() {
     for (int i = 1; i <= num; i++) {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
+//        if (zhen > 4000 && val < 100)continue;
+        if (val < 100)continue;
+        if (zhen > 4000 && val < 150)continue;
         new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {
@@ -230,6 +233,7 @@ void PerframeOutput() {
                 }
                 int val = 0;
                 int empty_size = boat_capacity - boats[i].num;
+                //if (berths[j].things.size() - z < empty_size)continue;
                 int min1 = min(z + empty_size, (int) berths[j].things.size());
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;

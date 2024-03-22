@@ -10,8 +10,8 @@ void PerframeInput() {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
 //        if (zhen > 4000 && val < 100)continue;
-        if (val < 100)continue;
-        if (first && val < 150)continue;
+//        if (val < 100)continue;
+//        if (first && val < 150)continue;
         new_cargos.emplace_back(x, y, val, zhen);
     }
     for (int i = 0; i < robot_num; i++) {
@@ -184,7 +184,7 @@ void PerframeOutput() {
         if (boats[i].status == 0)
             continue;
         if (boats[i].num == boat_capacity || // 当装满的时候直接出发开始运输
-            boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + zhen > 14950 &&
+            boats[i].berthid != -1 && berths[boats[i].berthid].transport_time + zhen > 14995 &&
             boats[i].num != 0) { // 当时间快到的时候也直接开始运输
             boats[i].go();
             continue;
@@ -228,7 +228,7 @@ void PerframeOutput() {
             for (int j = 0; j < berth_num; j++) {
                 if (berths[j].boatids.size() >= berths[j].things.size() * 1.0 / boat_capacity)
                     continue;
-                if (zhen + 500 + berths[j].transport_time > 14950)
+                if (zhen + 500 + berths[j].transport_time > 14995)
                     continue;
                 int z = 0;
                 for (int k = 0; k < berths[j].boatids.size(); k++) {
@@ -243,7 +243,9 @@ void PerframeOutput() {
                 }
                 double base = boats[i].val * 1.0 / berths[boats[i].berthid].transport_time;
                 double now = (val + boats[i].val) / (berths[j].transport_time + 500);
-                if (base > now)continue;
+                if (zhen + berths[boats[i].berthid].transport_time + berths[j].transport_time * 2 < 14995 &&
+                    base > now)
+                    continue;
                 if (now > max) {
                     max = now;
                     goal = j;
@@ -256,14 +258,14 @@ void PerframeOutput() {
     for (int i = 0; i < berth_num; i++) {
         berths[i].stowage();
     }
-    if (zhen == 15000) {
-        for (int i = 0; i < berth_num; i++) {
-            log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
-        }
-        for (int i = 0; i < boat_num; i++) {
-            log("船只" + to_string(i) + "的货物" + to_string(boats[i].num));
-        }
+//    if (zhen == 15000) {
+    for (int i = 0; i < berth_num; i++) {
+        log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()));
     }
+    for (int i = 0; i < boat_num; i++) {
+        log("船只" + to_string(i) + "的货物" + to_string(boats[i].num) + "在泊位" + to_string(boats[i].berthid));
+    }
+//    }
     puts("OK");
     fflush(stdout);
 }

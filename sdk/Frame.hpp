@@ -203,6 +203,7 @@ void PerframeOutput() {
                 for (int k = z; k < min1; k++) {
                     val += berths[j].things[k].val;
                 }
+                if (val == 0)val = 1;
                 val /= berths[j].transport_time;
                 if (val > max) {
                     max = val;

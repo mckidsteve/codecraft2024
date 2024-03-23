@@ -9,7 +9,7 @@ const int n = 200; // map size
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
-const int random_bfs_point = 400;
+const int random_bfs_point = 600;
 bool first = false;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限
@@ -26,7 +26,7 @@ vector<vector<char>> game_map(n, vector<char>(n, '#'));
 // 到对应泊位的距离
 vector<vector<vector<int>>> berth_dis(n, vector<vector<int>>(n, vector<int>(berth_num, -1)));
 // 到随机点的距离
-vector<vector<vector<int>>> random_dis(n, vector<vector<int>>(n, vector<int>(random_bfs_point + 50, -1)));
+vector<vector<vector<int>>> random_dis(n, vector<vector<int>>(n, vector<int>(random_bfs_point * 5, -1)));
 // 所有随机点的坐标
 vector<pair<int, int>> random_point;
 
@@ -79,11 +79,13 @@ ECBS *ecbs;
 int main() {
     LogInit();
     Init();
+    thread a(Init_bfs_log);
     for (int zhen = 1; zhen <= 15000; zhen++) {
         PerframeInput();
         PerframeUpdate();
         PerframeOutput();
     }
+    a.join();
     LogClose();
     return 0;
 }

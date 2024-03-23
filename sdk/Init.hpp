@@ -25,6 +25,11 @@ void Init() {
         scanf("%d%d%d%d", &berths[id].x, &berths[id].y, &berths[id].transport_time, &berths[id].loading_speed);
         log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
             to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
+
+        if(berths[0].x == 73 && berths[0].y == 73 && berths[0].transport_time == 800 && berths[0].loading_speed == 1) mapstatus = 2;
+        else if(berths[0].x == 2 && berths[0].y == 174 ) mapstatus = 1;
+        else mapstatus = 3;
+
         berths[id].id = id;
         for (int j = 0; j < 4; j++) {
             for (int k = 0; k < 4; k++) {

@@ -28,7 +28,7 @@ namespace Robotlib {
         bool
         SearchToBerth(Robotlib::Path &path, int time, std::pair<int, int> start,
                       std::pair<int, int> goal,
-                      const unordered_set<State> &obstacles, int berthid, int robot_id, AllPaths *allPaths,
+                      const unordered_set <State> &obstacles, int berthid, int robot_id, AllPaths *allPaths,
                       int near_point) {
             path.clear();
             std::PriorityQueue<Node *, NodePtrComparator> open_set;//开放集合
@@ -47,7 +47,7 @@ namespace Robotlib {
             double min_f = start_node->f;
             bool flag = false;
             bool flag_first = true;
-            while (!open_set.empty()) {
+            while (!open_set.empty() && (mapstatus != 1 || mapstatus == 1 && close_set.size() < 2000)) {
                 double old_min_f = min_f;
                 min_f = open_set.top()->f;
                 if (min_f > old_min_f) {
@@ -106,6 +106,12 @@ namespace Robotlib {
                 while (!open_set.empty() && open_set.top()->use)open_set.pop();
                 flag_first = false;
             }
+            //            log("finish" + to_string(finished_set.size()));
+//            log("close" + to_string(close_set.size()));
+//            log("open" + to_string(open_set.size()));
+//            log("road" + to_string(path.road.size()));
+
+
             if (!flag) {
                 return false;
             }

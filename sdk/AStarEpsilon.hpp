@@ -174,6 +174,8 @@ namespace Robotlib {
         //节点指针比较函数
         struct NodePtrComparator {
             bool operator()(const Node *a, const Node *b) const {
+//                if (a->clash != b->clash)
+//                    return a->clash > b->clash;
                 return a->f > b->f;
             }
         };

@@ -3,7 +3,7 @@
 // 每帧的输入
 void PerframeInput() {
     scanf("%d%d", &zhen, &money);
-    log("第" + to_string(zhen) + "帧");
+    //log("第" + to_string(zhen) + "帧");
     int num;
     scanf("%d", &num);
     for (int i = 1; i <= num; i++) {
@@ -258,14 +258,14 @@ void PerframeOutput() {
         berths[i].stowage();
     }
 //    if (zhen == 15000) {
-    for (int i = 0; i < berth_num; i++) {
+    /*for (int i = 0; i < berth_num; i++) {
         log("泊位" + to_string(i) + "的货物数量" + to_string(berths[i].things.size()) + "船只数量" +
             to_string(berths[i].boatids.size()) + "货物平均价值" +
             to_string(berths[i].carge_value * 1.0 / berths[i].cargo_dis));
     }
     for (int i = 0; i < boat_num; i++) {
         log("船只" + to_string(i) + "的货物" + to_string(boats[i].num) + "在泊位" + to_string(boats[i].berthid));
-    }
+    }*/
 //    }
     puts("OK");
     fflush(stdout);

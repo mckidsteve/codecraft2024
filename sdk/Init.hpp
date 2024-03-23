@@ -23,8 +23,8 @@ void Init() {
         int id;
         scanf("%d", &id);
         scanf("%d%d%d%d", &berths[id].x, &berths[id].y, &berths[id].transport_time, &berths[id].loading_speed);
-        log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
-            to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
+        //log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
+        //    to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
 
         if(berths[0].x == 73 && berths[0].y == 73 && berths[0].transport_time == 800 && berths[0].loading_speed == 1) mapstatus = 2;
         else if(berths[0].x == 2 && berths[0].y == 174 ) mapstatus = 1;
@@ -113,7 +113,7 @@ void Init() {
         }
     }
     int size = random_point.size();
-    log("初始化随机点的个数:" + to_string(random_point.size()));
+    //log("初始化随机点的个数:" + to_string(random_point.size()));
     for (int i = 0; i < size; i++) {
         pair<int, int> st = random_point[i];
         queue<pair<int, pair<int, int>>> q;
@@ -179,7 +179,7 @@ void Init() {
 //        mapfile.close();
 //    }
 #endif
-    log("轮船运载能力" + to_string(boat_capacity));
+    //log("轮船运载能力" + to_string(boat_capacity));
     printf("OK\n");
     fflush(stdout);
 }

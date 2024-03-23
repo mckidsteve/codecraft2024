@@ -4,16 +4,35 @@
 
 void ChangeCargo(int x, int y, int val, bool f) {
     if (val > 100) {
-        for (int j = 0; j < berth_num; j++) {
-            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 52)continue;
-            if (f) {
-                berths[j].cargo_dis += berth_dis[x][y][j] * 2;
-                berths[j].carge_value += val;
-            } else {
-                berths[j].cargo_dis -= berth_dis[x][y][j] * 2;
-                berths[j].carge_value -= val;
+        //找到最近的泊位
+        int min = MAXNUM;
+        int min_id = -1;
+        for (int i = 0; i < berth_num; i++) {
+            if (berth_dis[x][y][i] == -1)continue;
+            if (berth_dis[x][y][i] < min) {
+                min = berth_dis[x][y][i];
+                min_id = i;
             }
         }
+        if (min_id != -1) {
+            if (f) {
+                berths[min_id].cargo_dis = 1;
+                berths[min_id].carge_value += val / berth_dis[x][y][min_id];
+            } else {
+                berths[min_id].cargo_dis = 1;
+                berths[min_id].carge_value -= val / berth_dis[x][y][min_id];
+            }
+        }
+//        for (int j = 0; j < berth_num; j++) {
+//            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 52)continue;
+//            if (f) {
+//                berths[j].cargo_dis += berth_dis[x][y][j] * 2;
+//                berths[j].carge_value += val;
+//            } else {
+//                berths[j].cargo_dis -= berth_dis[x][y][j] * 2;
+//                berths[j].carge_value -= val;
+//            }
+//        }
     }
 }
 
@@ -49,8 +68,10 @@ void Robot::move(int x, int y) {
 void Robot::Reset(bool complete) {
     path.clear();
     berthid = -1;
-    if (!complete && goods == 0)
+    if (!complete && goods == 0) {
+        ChangeCargo(cargo.x, cargo.y, cargo.val, true);
         cargos.push(cargo);
+    }
     cargo = default_cargo;
 }
 

@@ -48,7 +48,7 @@ namespace Robotlib {
             bool flag = false;
             AllPaths *goal = nullptr;
             int num = 0;
-            while (!open_set.empty()) {
+            while (!open_set.empty() && finished_set.size() < 36) {
 //                log("搜索" + to_string(num));
                 num++;
                 double old_min_f = min_f;
@@ -274,6 +274,7 @@ namespace Robotlib {
             if (!flag) {
                 return;
             }
+            if (goal == nullptr)return;
             //log("ECBS成功" + to_string(num));
             for (int i = 0; i < robot_num; i++) {
                 robots[i]->path = goal->roads[i];

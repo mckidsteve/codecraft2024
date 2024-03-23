@@ -39,8 +39,10 @@ double Berth::transport_time_value() const {
     //当前种子
 //    if (mapstatus == 3)return 20 - (carge_value / 10) * 2; 24.46w
 //    if (mapstatus == 3)return 20 - (carge_value / 10);
-    if (mapstatus == 3)return 20 - (carge_value / 10) * 1.5;
-    else if (mapstatus == 2)return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
+//    if (mapstatus == 3)return 10 - (carge_value / 10) * 1.5; : 245 / 249
+//    else if (mapstatus == 2)return 30 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
+    if (mapstatus == 3)return 10 - (carge_value / 10) * 1.5;
+    else if (mapstatus == 2)return 25 - (carge_value / 10) * 1.5 - (carge_value / 10) * (carge_value / 10) * 0.5;
     return 0;
 
 

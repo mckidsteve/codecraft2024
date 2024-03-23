@@ -37,6 +37,7 @@ void Init() {
             }
         }
     }
+    log(to_string(mapstatus));
     scanf("%d", &boat_capacity);
     char okk[100];
     scanf("%s", okk);

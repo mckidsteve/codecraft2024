@@ -31,6 +31,7 @@ double Berth::transport_time_value() const {
     //return cargo_dis != 0 ? 10 - carge_value * 1.0 / cargo_dis : 0;
     //return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
     if (mapstatus == 3)return 20 - (carge_value / 10) * 2;
+    else if (mapstatus == 2)return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
     return 0;
 
 

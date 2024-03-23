@@ -15,13 +15,24 @@ void ChangeCargo(int x, int y, int val, bool f) {
             }
         }
         if (min_id != -1) {
-            if (f) {
-                berths[min_id].cargo_dis = 1;
-                berths[min_id].carge_value += val / berth_dis[x][y][min_id];
+            if (mapstatus == 3) {
+                if (f) {
+                    berths[min_id].cargo_dis = 1;
+                    berths[min_id].carge_value += val / berth_dis[x][y][min_id];
+                } else {
+                    berths[min_id].cargo_dis = 1;
+                    berths[min_id].carge_value -= val / berth_dis[x][y][min_id];
+                }
             } else {
-                berths[min_id].cargo_dis = 1;
-                berths[min_id].carge_value -= val / berth_dis[x][y][min_id];
+                if (f) {
+                    berths[min_id].cargo_dis = 1;
+                    berths[min_id].carge_value += val / max(berth_dis[x][y][min_id], 10);
+                } else {
+                    berths[min_id].cargo_dis = 1;
+                    berths[min_id].carge_value -= val / max(berth_dis[x][y][min_id], 10);
+                }
             }
+
         }
 //        for (int j = 0; j < berth_num; j++) {
 //            if (berth_dis[x][y][j] == -1 || berth_dis[x][y][j] > 52)continue;

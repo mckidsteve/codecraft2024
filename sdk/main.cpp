@@ -9,7 +9,7 @@ const int n = 200; // map size
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
-const int random_bfs_point = 200;
+const int random_bfs_point = 400;
 bool first = false;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限

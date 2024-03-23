@@ -1,5 +1,39 @@
 #pragma once
 
+#include <atomic>
+#include <thread>
+
+void Init_bfs(int th, int st, int ed) {
+    int dir[4][2] = {{0,  1},
+                     {0,  -1},
+                     {1,  0},
+                     {-1, 0}};
+    for (int i = st; i < ed; i++) {
+        pair<int, int> st = random_point[i];
+        queue<pair<int, pair<int, int>>> q;
+        q.emplace(0, make_pair(st.first, st.second));
+        random_dis[st.first][st.second][i] = 0;
+        while (!q.empty()) {
+            int nowx = q.front().second.first;
+            int nowy = q.front().second.second;
+            int nowg = q.front().first;
+            q.pop();
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || random_dis[nextx][nexty][i] != -1 ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                // 标记已经访问
+                random_dis[nextx][nexty][i] = nowg + 1;
+                // 加入优先队列
+                q.emplace(nowg + 1, make_pair(nextx, nexty));
+            }
+        }
+    }
+}
+
+
 void Init() {
     for (int i = 0; i < n; i++) {
         char s[n];
@@ -145,28 +179,11 @@ void Init() {
     }
     int size = random_point.size();
     //log("初始化随机点的个数:" + to_string(random_point.size()));
-    for (int i = 0; i < size; i++) {
-        pair<int, int> st = random_point[i];
-        queue<pair<int, pair<int, int>>> q;
-        q.emplace(0, make_pair(st.first, st.second));
-        random_dis[st.first][st.second][i] = 0;
-        while (!q.empty()) {
-            int nowx = q.front().second.first;
-            int nowy = q.front().second.second;
-            int nowg = q.front().first;
-            q.pop();
-            for (int j = 0; j < 4; j++) {
-                int nextx = nowx + dir[j][0];
-                int nexty = nowy + dir[j][1];
-                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || random_dis[nextx][nexty][i] != -1 ||
-                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
-                    continue;
-                // 标记已经访问
-                random_dis[nextx][nexty][i] = nowg + 1;
-                // 加入优先队列
-                q.emplace(nowg + 1, make_pair(nextx, nexty));
-            }
-        }
+    std::vector<std::thread> threads; // 存储线程的向量
+    threads.emplace_back(Init_bfs, 0, 0, size / 2);
+    threads.emplace_back(Init_bfs, 1, size / 2, size);
+    for (auto &worker: threads) {
+        worker.join();
     }
     ecbs = new ECBS(game_map, 1.5, berth_dis, random_dis);
     for (int i = 0; i < robot_num; i++) {

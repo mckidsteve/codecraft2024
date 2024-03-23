@@ -26,8 +26,8 @@ void Init() {
         log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
             to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
 
-        if(berths[0].x == 73 && berths[0].y == 73) mapstatus = 2;
-        else if(berths[0].x == 2 && berths[0].y == 174 ) mapstatus = 1;
+        if(berths[0].x == 73 && berths[0].y == 73 && berths[1].x == 73 && berths[1].y == 121) mapstatus = 2;
+        else if(berths[0].x == 2 && berths[0].y == 174 && berths[1].x == 14 && berths[1].y == 175) mapstatus = 1;
         else mapstatus = 3;
 
         berths[id].id = id;

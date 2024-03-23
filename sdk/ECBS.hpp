@@ -48,7 +48,7 @@ namespace Robotlib {
             bool flag = false;
             AllPaths *goal = nullptr;
             int num = 0;
-            while (!open_set.empty() && finished_set.size() < 36) {
+            while (!open_set.empty() && (mapstatus != 1 || (mapstatus == 1 && finished_set.size() < 2))) {
 //                log("搜索" + to_string(num));
                 num++;
                 double old_min_f = min_f;

@@ -26,8 +26,8 @@ void Init() {
         log(to_string(id) + " " + to_string(berths[id].x) + " " + to_string(berths[id].y) + " " +
             to_string(berths[id].transport_time) + " " + to_string(berths[id].loading_speed));
 
-        if(berths[0].x == 73 && berths[0].y == 73 && berths[1].x == 73 && berths[1].y == 121) mapstatus = 2;
-        else if(berths[0].x == 2 && berths[0].y == 174 && berths[1].x == 14 && berths[1].y == 175) mapstatus = 1;
+        if (berths[0].x == 73 && berths[0].y == 73 && berths[1].x == 73 && berths[1].y == 121) mapstatus = 2;
+        else if (berths[0].x == 2 && berths[0].y == 174 && berths[1].x == 14 && berths[1].y == 175) mapstatus = 1;
         else mapstatus = 3;
 
         berths[id].id = id;
@@ -82,6 +82,36 @@ void Init() {
         }
     }
     sum = sum / random_bfs_point;
+    //优先使用泊位进行初始化
+    for (int i = 0; i < berth_num; i++) {
+
+
+        if (vis[berths[i].x][berths[i].y])continue;
+        queue<pair<int, int>> q;
+        q.emplace(berths[i].x, berths[i].y);
+        vis[berths[i].x][berths[i].y] = true;
+        while (!q.empty()) {
+            int nowx = q.front().first;
+            int nowy = q.front().second;
+            q.pop();
+            f++;
+            if (f == sum) {
+                f = 0;
+                random_point.emplace_back(nowx, nowy);
+            }
+            for (int j = 0; j < 4; j++) {
+                int nextx = nowx + dir[j][0];
+                int nexty = nowy + dir[j][1];
+                if (nextx < 0 || nextx >= n || nexty < 0 || nexty >= n || vis[nextx][nexty] ||
+                    game_map[nextx][nexty] == '#' || game_map[nextx][nexty] == '*')
+                    continue;
+                //标记已经访问
+                vis[nextx][nexty] = true;
+                //加入优先队列
+                q.emplace(nextx, nexty);
+            }
+        }
+    }
     for (int ii = 0; ii < n; ii++) {
         if (random_point.size() >= random_bfs_point)break;
         for (int jj = 0; jj < n; jj++) {

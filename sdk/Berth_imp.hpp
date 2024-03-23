@@ -30,7 +30,16 @@ double Berth::transport_time_value() const {
 //           boat_capacity * transport_time / boat_capacity;
     //return cargo_dis != 0 ? 10 - carge_value * 1.0 / cargo_dis : 0;
     //return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
-    if (mapstatus == 3)return 20 - (carge_value / 10) * 2;
+    //废弃种子
+    //if (mapstatus == 3)return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5; 21.6w
+    //if (mapstatus == 3)return 20 - (carge_value / 10) - (carge_value / 10) * (carge_value / 10) * 0.1; 24.4w
+//    if (mapstatus == 3)
+//        return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.1 -
+//               (carge_value / 10) * (carge_value / 10) * (carge_value / 10) * 0.05;
+    //当前种子
+//    if (mapstatus == 3)return 20 - (carge_value / 10) * 2; 24.46w
+//    if (mapstatus == 3)return 20 - (carge_value / 10);
+    if (mapstatus == 3)return 20 - (carge_value / 10) * 1.5;
     else if (mapstatus == 2)return 20 - (carge_value / 10) * 2 - (carge_value / 10) * (carge_value / 10) * 0.5;
     return 0;
 

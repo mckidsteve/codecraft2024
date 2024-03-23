@@ -9,12 +9,12 @@ const int n = 200; // map size
 const int robot_num = 10;
 const int boat_num = 5;
 const int berth_num = 10;
-const int random_bfs_point = 100;
+const int random_bfs_point = 200;
 bool first = false;
 int money;         // 钱数 （分数）
 int boat_capacity; // 船装货上限
 int free_boats = boat_num;    // 空闲船只
-int mapstatus = 2 ; // 地图种类特判 : ep : 2 = map 2 (线上的地图1)
+int mapstatus = 2; // 地图种类特判 : ep : 2 = map 2 (线上的地图1)
 /**
  * 地图
  * .空地

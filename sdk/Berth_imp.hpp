@@ -28,6 +28,7 @@ double Berth::transport_time_value() const {
 //    return 5 * empty * transport_time / boat_capacity;
 //    return (1 * (boat_num - free_boats) / boat_num + 1) * (boat_capacity - ((int) things.size() % boat_capacity)) /
 //           boat_capacity * transport_time / boat_capacity;
+    //return cargo_dis != 0 ? 10 - carge_value * 1.0 / cargo_dis : 0;
     return 0;
 //    return transport_time * 1.0 * (boat_capacity - ((int) things.size() % boat_capacity)) / boat_capacity;
 //    return transport_time * 1.0 / boat_capacity;
